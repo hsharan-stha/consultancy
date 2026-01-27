@@ -133,6 +133,32 @@
                     </div>
                 </div>
 
+                <!-- Login Credentials -->
+                <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Login Credentials</h3>
+                    @if($student->user_id)
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">User account exists. Leave password blank to keep current password.</p>
+                    @else
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">No user account found. A new account will be created. Leave password blank to use default password: <strong>password</strong></p>
+                    @endif
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password (Optional)</label>
+                            <input type="password" name="password" 
+                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                placeholder="Leave blank to keep/use default">
+                            <p class="text-xs text-gray-500 mt-1">Minimum 8 characters. Leave blank to keep current password or use default.</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirm Password</label>
+                            <input type="password" name="password_confirmation" 
+                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                placeholder="Confirm password">
+                        </div>
+                    </div>
+                </div>
+
                 <div class="flex justify-between">
                     <form action="{{ route('consultancy.students.destroy', $student) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this student?')">
                         @csrf

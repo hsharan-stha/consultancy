@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Student;
 use App\Models\University;
 use App\Models\Counselor;
+use App\Models\User;
+use App\Models\Role;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class StudentController extends Controller
 {
@@ -58,7 +61,7 @@ class StudentController extends Controller
         $validated = $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
-            'email' => 'required|email|unique:students,email',
+            'email' => 'required|email|unique:students,email|unique:users,email',
             'phone' => 'required|string|max:20',
             'gender' => 'nullable|in:male,female,other',
             'date_of_birth' => 'nullable|date',
@@ -67,6 +70,7 @@ class StudentController extends Controller
             'counselor_id' => 'nullable|exists:counselors,id',
             'target_university_id' => 'nullable|exists:universities,id',
             'photo' => 'nullable|image|max:2048',
+            'password' => 'nullable|string|min:8|confirmed',
         ]);
 
         if ($request->hasFile('photo')) {
@@ -76,10 +80,33 @@ class StudentController extends Controller
             $validated['photo'] = 'images/students/' . $photoName;
         }
 
+        // Get Student role
+        $studentRole = Role::where('role', 'Student')->first();
+        if (!$studentRole) {
+            return back()->withErrors(['error' => 'Student role not found. Please seed the database first.'])->withInput();
+        }
+
+        // Create User account for login
+        $user = User::create([
+            'name' => $validated['first_name'] . ' ' . $validated['last_name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password'] ?? 'password'), // Default password if not provided
+            'role_id' => $studentRole->id,
+            'email_verified_at' => now(), // Auto-verify email for admin-created accounts
+        ]);
+
+        // Add user_id to validated data
+        $validated['user_id'] = $user->id;
+
         $student = Student::create($validated);
 
-        return redirect()->route('students.show', $student)
-            ->with('success', 'Student registered successfully! ID: ' . $student->student_id);
+        $message = 'Student registered successfully! ID: ' . $student->student_id;
+        if (!$request->filled('password')) {
+            $message .= ' Default password: password';
+        }
+
+        return redirect()->route('consultancy.students.show', $student)
+            ->with('success', $message);
     }
 
     public function show(Student $student)
@@ -104,7 +131,7 @@ class StudentController extends Controller
         $validated = $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
-            'email' => 'required|email|unique:students,email,' . $student->id,
+            'email' => 'required|email|unique:students,email,' . $student->id . '|unique:users,email,' . ($student->user_id ?? 'NULL'),
             'phone' => 'required|string|max:20',
             'gender' => 'nullable|in:male,female,other',
             'date_of_birth' => 'nullable|date',
@@ -114,6 +141,7 @@ class StudentController extends Controller
             'counselor_id' => 'nullable|exists:counselors,id',
             'target_university_id' => 'nullable|exists:universities,id',
             'photo' => 'nullable|image|max:2048',
+            'password' => 'nullable|string|min:8|confirmed',
         ]);
 
         if ($request->hasFile('photo')) {
@@ -127,16 +155,48 @@ class StudentController extends Controller
             $validated['photo'] = 'images/students/' . $photoName;
         }
 
+        // Update or create User account
+        if ($student->user_id) {
+            // Update existing user
+            $user = User::find($student->user_id);
+            if ($user) {
+                $user->update([
+                    'name' => $validated['first_name'] . ' ' . $validated['last_name'],
+                    'email' => $validated['email'],
+                ]);
+                
+                // Update password if provided
+                if ($request->filled('password')) {
+                    $user->update([
+                        'password' => Hash::make($validated['password']),
+                    ]);
+                }
+            }
+        } else {
+            // Create new user if student doesn't have one
+            $studentRole = Role::where('role', 'Student')->first();
+            if ($studentRole) {
+                $user = User::create([
+                    'name' => $validated['first_name'] . ' ' . $validated['last_name'],
+                    'email' => $validated['email'],
+                    'password' => Hash::make($validated['password'] ?? 'password'),
+                    'role_id' => $studentRole->id,
+                    'email_verified_at' => now(),
+                ]);
+                $validated['user_id'] = $user->id;
+            }
+        }
+
         $student->update($validated);
 
-        return redirect()->route('students.show', $student)
+        return redirect()->route('consultancy.students.show', $student)
             ->with('success', 'Student updated successfully!');
     }
 
     public function destroy(Student $student)
     {
         $student->delete();
-        return redirect()->route('students.index')
+        return redirect()->route('consultancy.students.index')
             ->with('success', 'Student deleted successfully!');
     }
 }

@@ -90,6 +90,28 @@
                     </div>
                 </div>
 
+                <!-- Login Credentials -->
+                <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Login Credentials</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">A user account will be automatically created for system login. Leave password blank to use default password: <strong>password</strong></p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password (Optional)</label>
+                            <input type="password" name="password" 
+                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                placeholder="Leave blank for default: password">
+                            <p class="text-xs text-gray-500 mt-1">Minimum 8 characters. If blank, default password will be used.</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirm Password</label>
+                            <input type="password" name="password_confirmation" 
+                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                placeholder="Confirm password">
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Educational Background -->
                 <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Educational Background</h3>
