@@ -26,6 +26,11 @@ class HomeController extends Controller
             if($user->role_id == 4){
                 return redirect()->route('portal.dashboard');
             }
+            
+            // Redirect teachers to teacher portal dashboard
+            if($user->role_id == 6){
+                return redirect()->route('teacher.dashboard');
+            }
         }
 
         if (Auth::check() && !Auth::user()->hasVerifiedEmail()) {

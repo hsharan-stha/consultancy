@@ -34,6 +34,11 @@ class RedirectIfAuthenticated
                     return redirect()->route('portal.dashboard');
                 }
                 
+                // Redirect teachers to teacher portal dashboard
+                if ($user->role_id == 6) {
+                    return redirect()->route('teacher.dashboard');
+                }
+                
                 return redirect(RouteServiceProvider::HOME);
             }
         }

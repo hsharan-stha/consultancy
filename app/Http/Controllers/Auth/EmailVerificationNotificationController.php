@@ -22,6 +22,9 @@ class EmailVerificationNotificationController extends Controller
             if ($user->role_id == 4) {
                 return redirect()->route('portal.dashboard');
             }
+            if ($user->role_id == 6) {
+                return redirect()->route('teacher.dashboard');
+            }
             return redirect()->intended(RouteServiceProvider::HOME);
         }
 

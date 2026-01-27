@@ -56,6 +56,11 @@ class AuthenticatedSessionController extends Controller
             return redirect()->route('portal.dashboard');
         }
         
+        // Redirect teachers to teacher portal dashboard
+        if ($user->role_id == 6) {
+            return redirect()->route('teacher.dashboard');
+        }
+        
         // Redirect admin/editor to consultancy dashboard
         if ($user->role_id == 1 || $user->role_id == 2) {
             return redirect()->route('consultancy.dashboard');

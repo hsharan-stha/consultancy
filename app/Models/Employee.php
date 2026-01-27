@@ -57,4 +57,16 @@ class Employee extends Model
     {
         return "{$this->first_name} {$this->last_name}";
     }
+
+    public function courses()
+    {
+        return $this->belongsToMany(Course::class, 'teacher_courses', 'teacher_id', 'course_id')
+                    ->withPivot('hourly_rate', 'hours_per_week', 'status', 'assigned_date', 'notes')
+                    ->withTimestamps();
+    }
+
+    public function teacherCourses()
+    {
+        return $this->hasMany(TeacherCourse::class, 'teacher_id');
+    }
 }

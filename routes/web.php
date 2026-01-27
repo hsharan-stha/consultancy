@@ -17,6 +17,7 @@ use App\Http\Controllers\CommunicationController;
 use App\Http\Controllers\CounselorController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\StudentPortalController;
+use App\Http\Controllers\TeacherPortalController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UniversityController;
 use App\Http\Controllers\ConsultancyProfileController;
@@ -129,6 +130,17 @@ Route::middleware(['auth', 'verified'])->prefix('portal')->name('portal.')->grou
     Route::get('/payments', [StudentPortalController::class, 'payments'])->name('payments');
     Route::get('/messages', [StudentPortalController::class, 'messages'])->name('messages');
     Route::post('/messages', [StudentPortalController::class, 'sendMessage'])->name('messages.send');
+});
+
+// Teacher Portal Routes (Role: 6 - Teacher)
+Route::middleware(['auth', 'verified', 'role:6'])->prefix('teacher')->name('teacher.')->group(function () {
+    Route::get('/dashboard', [TeacherPortalController::class, 'dashboard'])->name('dashboard');
+    Route::get('/courses', [TeacherPortalController::class, 'courses'])->name('courses');
+    Route::get('/attendance', [TeacherPortalController::class, 'attendance'])->name('attendance');
+    Route::post('/attendance', [TeacherPortalController::class, 'markAttendance'])->name('attendance.mark');
+    Route::get('/payments', [TeacherPortalController::class, 'payments'])->name('payments');
+    Route::get('/profile', [TeacherPortalController::class, 'profile'])->name('profile');
+    Route::put('/profile', [TeacherPortalController::class, 'updateProfile'])->name('profile.update');
 });
 
 // Public University Routes

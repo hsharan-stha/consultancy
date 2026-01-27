@@ -24,6 +24,9 @@ class VerifyEmailController extends Controller
             if ($user->role_id == 4) {
                 return redirect()->route('portal.dashboard')->with('verified', true);
             }
+            if ($user->role_id == 6) {
+                return redirect()->route('teacher.dashboard')->with('verified', true);
+            }
             return redirect()->intended(RouteServiceProvider::HOME . '?verified=1');
         }
 
@@ -36,6 +39,9 @@ class VerifyEmailController extends Controller
         }
         if ($user->role_id == 4) {
             return redirect()->route('portal.dashboard')->with('verified', true);
+        }
+        if ($user->role_id == 6) {
+            return redirect()->route('teacher.dashboard')->with('verified', true);
         }
         return redirect()->intended(RouteServiceProvider::HOME . '?verified=1');
     }
