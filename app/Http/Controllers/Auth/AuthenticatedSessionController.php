@@ -51,6 +51,11 @@ class AuthenticatedSessionController extends Controller
             return redirect('/');
         }
         
+        // Redirect students to portal dashboard
+        if ($user->role_id == 4) {
+            return redirect()->route('portal.dashboard');
+        }
+        
         // Redirect admin/editor to consultancy dashboard
         if ($user->role_id == 1 || $user->role_id == 2) {
             return redirect()->route('consultancy.dashboard');

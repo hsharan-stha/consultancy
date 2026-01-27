@@ -23,10 +23,17 @@ class RedirectIfAuthenticated
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
-                if (Auth::user()->role_id == 3) {
+                $user = Auth::user();
+                
+                if ($user->role_id == 3) {
                     return redirect("/");
-
                 }
+                
+                // Redirect students to portal dashboard
+                if ($user->role_id == 4) {
+                    return redirect()->route('portal.dashboard');
+                }
+                
                 return redirect(RouteServiceProvider::HOME);
             }
         }

@@ -35,7 +35,7 @@ use App\Http\Controllers\EmployeeController;
 
 
 // Public Route
-Route::resource('/', HomeController::class);
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Admin/Editor Routes (Role: 1, 2)
 Route::middleware(['auth', 'verified', 'role:1,2'])->group(function () {

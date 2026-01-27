@@ -15,8 +15,16 @@ class HomeController extends Controller
         $loggedInDevices = 0;
         if (Auth::check()) {
             $loggedInDevices = DB::table('sessions')->where("user_id", Auth::user()->id)->count();
-            if(Auth::user()->role_id == 1 || Auth::user()->role_id == 2){
+            $user = Auth::user();
+            
+            // Redirect admins/editors to consultancy dashboard
+            if($user->role_id == 1 || $user->role_id == 2){
                 return redirect()->route('consultancy.dashboard');
+            }
+            
+            // Redirect students to portal dashboard
+            if($user->role_id == 4){
+                return redirect()->route('portal.dashboard');
             }
         }
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Role;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -37,19 +38,23 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        // Get Student role ID (role_id = 4)
+        $studentRole = Role::where('role', 'Student')->first();
+        
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role_id' => 3
+            'role_id' => $studentRole ? $studentRole->id : 4 // Default to 4 if role not found
         ]);
 
         event(new Registered($user));
 
         Auth::login($user);
         
-        if (Auth::user()->role_id == 3) {
-            return redirect("/");
+        // Redirect students to portal dashboard
+        if (Auth::user()->role_id == 4) {
+            return redirect()->route('portal.dashboard');
         }
         return redirect(RouteServiceProvider::HOME);
     }

@@ -14,10 +14,13 @@ class EmailVerificationNotificationController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        if ($request->user()->hasVerifiedEmail()) {
-            if ($request::user()->role_id == 3) {
+        $user = $request->user();
+        if ($user->hasVerifiedEmail()) {
+            if ($user->role_id == 3) {
                 return redirect("/");
-
+            }
+            if ($user->role_id == 4) {
+                return redirect()->route('portal.dashboard');
             }
             return redirect()->intended(RouteServiceProvider::HOME);
         }

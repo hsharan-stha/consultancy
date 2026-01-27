@@ -16,19 +16,27 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        // \App\Models\User::factory(10)->create();
-
-        $roles = ['Super Admin', 'Admin', 'Reader'];
+        // Seed basic roles first
+        $roles = ['Super Admin', 'Admin', 'Editor', 'Student', 'Employee', 'Teacher', 'HR', 'Counselor'];
 
         foreach ($roles as $role) {
             Role::firstOrCreate(['role' => $role]);
         }
         
-        User::factory()->create([
-            'name' => 'Admin User',
-            'email' => 'admin@consultancy.com',
-            'password' => bcrypt('Admin@123'),
-            'role_id' => 1,
+        // Create basic admin user
+        User::firstOrCreate(
+            ['email' => 'admin@consultancy2.com'],
+            [
+                'name' => 'Admin User',
+                'password' => bcrypt('password'),
+                'role_id' => 1,
+                'email_verified_at' => now(),
+            ]
+        );
+
+        // Seed demo data
+        $this->call([
+            DemoDataSeeder::class,
         ]);
     }
 }

@@ -37,9 +37,12 @@ class ConfirmablePasswordController extends Controller
         }
 
         $request->session()->put('auth.password_confirmed_at', time());
-        if (Auth::user()->role_id == 3) {
+        $user = Auth::user();
+        if ($user->role_id == 3) {
             return redirect("/");
-
+        }
+        if ($user->role_id == 4) {
+            return redirect()->route('portal.dashboard');
         }
         return redirect()->intended(RouteServiceProvider::HOME);
     }
