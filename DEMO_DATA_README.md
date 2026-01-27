@@ -11,6 +11,7 @@ This seeder creates comprehensive dummy data for all tables in the consultancy m
   - 8 Student users
   - 3 Employee users
   - 2 Counselor users
+  - 3 Teacher users
 
 ### Students
 - 8 students with complete profiles
@@ -27,6 +28,12 @@ This seeder creates comprehensive dummy data for all tables in the consultancy m
 - 2 counselors with specializations
 - Linked to employee records
 - Active and ready to assist students
+
+### Teachers
+- 3 teachers with employee records
+- Positions: Japanese Language Teacher, English Teacher, IELTS Instructor
+- Each assigned to 2–4 courses (Japanese, English, IELTS, JLPT prep)
+- 22 days of attendance records per teacher (present, late, absent, on_leave)
 
 ### Universities
 - 5 Japanese universities
@@ -78,6 +85,21 @@ This seeder creates comprehensive dummy data for all tables in the consultancy m
 - Check-in/check-out times
 - Hours worked calculations
 
+### Courses
+- 7 courses (Japanese Beginner/Intermediate/Advanced, English Foundation, IELTS, JLPT N5/N4)
+- Course codes, levels, duration, fees in NPR
+- Status: active or draft
+
+### Teacher–Course Assignments
+- Each teacher assigned to 2–4 courses
+- Hourly rate and hours per week per course
+- Status: active or assigned
+
+### Teacher Attendances
+- 22 attendance records per teacher
+- Statuses: present, late, absent, on_leave
+- Check-in/check-out and hours worked when present
+
 ## How to Run
 
 ### Option 1: Run All Seeders (Recommended)
@@ -123,6 +145,11 @@ After seeding, you can login with:
   - Email: `lisa.anderson@consultancy.com` (or any counselor email)
   - Password: `password`
 
+- **Teachers**: 
+  - Email: `suresh.adhikari@consultancy.com` (or `anu.pandey@consultancy.com`, `bimal.thapa@consultancy.com`)
+  - Password: `password`
+  - Teachers can log in and use the Teacher Portal at `/teacher/dashboard`.
+
 ## Notes
 
 - All passwords are set to: `password`
@@ -144,6 +171,9 @@ The seeder maintains proper relationships:
 - Tasks are assigned to Users and linked to Students/Applications
 - Communications link Students and Users (Counselors)
 - Employee Attendances belong to Employees
+- Teachers are Employees with role_id 6; each has an Employee record
+- Courses are assigned to teachers via the teacher_courses pivot (hourly_rate, hours_per_week)
+- Teacher attendances use the same employee_attendances table (employee_id = teacher’s Employee id)
 
 ## Customization
 

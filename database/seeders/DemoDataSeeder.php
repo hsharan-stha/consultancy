@@ -17,8 +17,11 @@ use App\Models\Payment;
 use App\Models\Task;
 use App\Models\Communication;
 use App\Models\EmployeeAttendance;
+use App\Models\Course;
+use App\Models\TeacherCourse;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 
 class DemoDataSeeder extends Seeder
@@ -72,6 +75,23 @@ class DemoDataSeeder extends Seeder
         
         // Create Employee Attendances
         $this->createEmployeeAttendances($employees);
+
+        // Create Teachers (Employee records for Teacher role users)
+        $teachers = isset($users['teachers']) ? $this->createTeachers($users['teachers']) : [];
+
+        // Create Courses (only if courses table exists / migrations have run)
+        $courses = [];
+        if (Schema::hasTable('courses')) {
+            $courses = $this->createCourses();
+            if (!empty($teachers)) {
+                $this->createTeacherCourses($teachers, $courses);
+            }
+        }
+
+        // Create Teacher Attendances
+        if (!empty($teachers)) {
+            $this->createTeacherAttendances($teachers);
+        }
     }
 
     private function createRoles()
@@ -98,7 +118,8 @@ class DemoDataSeeder extends Seeder
             'admins' => [],
             'students' => [],
             'employees' => [],
-            'counselors' => []
+            'counselors' => [],
+            'teachers' => []
         ];
 
         // Admin Users
@@ -179,6 +200,27 @@ class DemoDataSeeder extends Seeder
                 'email_verified_at' => now(),
             ]);
             $users['counselors'][] = $user;
+        }
+
+        // Teacher Users
+        $teacherNames = [
+            ['name' => 'Dr. Suresh Adhikari', 'email' => 'suresh.adhikari@consultancy.com'],
+            ['name' => 'Ms. Anu Pandey', 'email' => 'anu.pandey@consultancy.com'],
+            ['name' => 'Mr. Bimal Thapa', 'email' => 'bimal.thapa@consultancy.com'],
+        ];
+
+        $teacherRole = Role::where('role', 'Teacher')->first();
+        if ($teacherRole) {
+            foreach ($teacherNames as $teacherData) {
+                $user = User::create([
+                    'name' => $teacherData['name'],
+                    'email' => $teacherData['email'],
+                    'password' => Hash::make('password'),
+                    'role_id' => $teacherRole->id,
+                    'email_verified_at' => now(),
+                ]);
+                $users['teachers'][] = $user;
+            }
         }
 
         return $users;
@@ -675,6 +717,146 @@ class DemoDataSeeder extends Seeder
                     'hours_worked' => round($hoursWorked, 2),
                     'status' => ['present', 'late', 'absent'][rand(0, 2)],
                     'notes' => rand(0, 1) ? ['Worked from home', 'Overtime', 'Half day'][rand(0, 2)] : null,
+                ]);
+            }
+        }
+    }
+
+    private function createTeachers($teacherUsers)
+    {
+        $teachers = [];
+        if (empty($teacherUsers)) {
+            return $teachers;
+        }
+
+        $positions = ['Japanese Language Teacher', 'English Teacher', 'IELTS Instructor'];
+        $departments = ['Language', 'Academics', 'Language'];
+
+        foreach ($teacherUsers as $index => $user) {
+            $nameParts = explode(' ', $user->name);
+            $employee = Employee::create([
+                'user_id' => $user->id,
+                'employee_id' => 'TCH-' . date('Y') . '-' . str_pad($index + 1, 4, '0', STR_PAD_LEFT),
+                'first_name' => $nameParts[0] ?? 'Teacher',
+                'last_name' => isset($nameParts[1]) ? implode(' ', array_slice($nameParts, 1)) : 'Name',
+                'email' => $user->email,
+                'phone' => '+977-98' . rand(10000000, 99999999),
+                'date_of_birth' => Carbon::now()->subYears(rand(28, 50)),
+                'gender' => ['male', 'female'][rand(0, 1)],
+                'address' => rand(1, 99) . ' Street, Kathmandu',
+                'position' => $positions[$index % count($positions)],
+                'department' => $departments[$index % count($departments)],
+                'hire_date' => Carbon::now()->subMonths(rand(6, 48)),
+                'employment_type' => ['full_time', 'part_time'][rand(0, 1)],
+                'salary' => rand(40000, 120000),
+                'status' => 'active',
+            ]);
+            $teachers[] = $employee;
+        }
+
+        return $teachers;
+    }
+
+    private function createCourses()
+    {
+        $courseData = [
+            ['code' => 'JAP101', 'name' => 'Japanese Beginner Level', 'level' => 'Beginner', 'hours' => 120, 'fee' => 25000],
+            ['code' => 'JAP201', 'name' => 'Japanese Intermediate', 'level' => 'Intermediate', 'hours' => 150, 'fee' => 30000],
+            ['code' => 'JAP301', 'name' => 'Japanese Advanced', 'level' => 'Advanced', 'hours' => 180, 'fee' => 35000],
+            ['code' => 'ENG101', 'name' => 'English Foundation', 'level' => 'Beginner', 'hours' => 100, 'fee' => 20000],
+            ['code' => 'IELTS01', 'name' => 'IELTS Preparation', 'level' => 'Intermediate', 'hours' => 80, 'fee' => 40000],
+            ['code' => 'JLPT-N5', 'name' => 'JLPT N5 Preparation', 'level' => 'Beginner', 'hours' => 90, 'fee' => 22000],
+            ['code' => 'JLPT-N4', 'name' => 'JLPT N4 Preparation', 'level' => 'Intermediate', 'hours' => 100, 'fee' => 26000],
+        ];
+
+        $courses = [];
+        foreach ($courseData as $i => $data) {
+            $startDate = Carbon::now()->addDays(rand(-30, 60));
+            $courses[] = Course::create([
+                'course_code' => $data['code'],
+                'course_name' => $data['name'],
+                'description' => 'Comprehensive ' . $data['name'] . ' course for students planning to study in Japan.',
+                'level' => $data['level'],
+                'duration_hours' => $data['hours'],
+                'fee' => $data['fee'],
+                'currency' => 'NPR',
+                'max_students' => rand(20, 30),
+                'current_students' => rand(5, 20),
+                'status' => ['active', 'active', 'draft'][rand(0, 2)],
+                'start_date' => $startDate,
+                'end_date' => $startDate->copy()->addMonths(3),
+            ]);
+        }
+
+        return $courses;
+    }
+
+    private function createTeacherCourses($teachers, $courses)
+    {
+        if (empty($teachers) || empty($courses)) {
+            return;
+        }
+
+        $statuses = ['active', 'active', 'assigned'];
+        foreach ($teachers as $teacher) {
+            // Assign 2–4 courses to each teacher
+            $numCourses = rand(2, min(4, count($courses)));
+            $assigned = array_rand($courses, $numCourses);
+            if (!is_array($assigned)) {
+                $assigned = [$assigned];
+            }
+            foreach ($assigned as $courseIndex) {
+                $course = $courses[$courseIndex];
+                TeacherCourse::create([
+                    'teacher_id' => $teacher->id,
+                    'course_id' => $course->id,
+                    'hourly_rate' => rand(500, 1500),
+                    'hours_per_week' => rand(4, 12),
+                    'status' => $statuses[array_rand($statuses)],
+                    'assigned_date' => Carbon::now()->subDays(rand(1, 90)),
+                ]);
+            }
+        }
+    }
+
+    private function createTeacherAttendances($teachers)
+    {
+        if (empty($teachers)) {
+            return;
+        }
+
+        $statuses = ['present', 'present', 'present', 'late', 'absent', 'on_leave'];
+        foreach ($teachers as $teacher) {
+            for ($i = 0; $i < 22; $i++) {
+                $date = Carbon::now()->subDays($i);
+                if ($date->isWeekend() && rand(0, 1)) {
+                    continue;
+                }
+
+                $status = $statuses[array_rand($statuses)];
+                $checkIn = ($status === 'present' || $status === 'late')
+                    ? Carbon::createFromTime(rand(8, 10), rand(0, 59), 0)
+                    : null;
+                $checkOut = ($status === 'present' || $status === 'late') && $checkIn
+                    ? Carbon::createFromTime(rand(16, 18), rand(0, 59), 0)
+                    : null;
+
+                $hoursWorked = 0;
+                if ($checkIn && $checkOut) {
+                    $hoursWorked = $checkOut->diffInMinutes($checkIn) / 60;
+                }
+
+                $checkInDateTime = $checkIn ? $date->copy()->setTime($checkIn->hour, $checkIn->minute, 0) : null;
+                $checkOutDateTime = $checkOut ? $date->copy()->setTime($checkOut->hour, $checkOut->minute, 0) : null;
+
+                EmployeeAttendance::create([
+                    'employee_id' => $teacher->id,
+                    'date' => $date->format('Y-m-d'),
+                    'check_in' => $checkInDateTime,
+                    'check_out' => $checkOutDateTime,
+                    'hours_worked' => round($hoursWorked, 2),
+                    'status' => $status,
+                    'notes' => $status === 'on_leave' ? 'Leave' : null,
                 ]);
             }
         }

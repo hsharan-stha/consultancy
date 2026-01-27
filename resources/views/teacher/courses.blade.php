@@ -72,7 +72,7 @@
 
                             @if($course->pivot->assigned_date)
                             <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                <p class="text-sm text-gray-500">Assigned Date: {{ $course->pivot->assigned_date->format('M d, Y') }}</p>
+                                <p class="text-sm text-gray-500">Assigned Date: {{ \Carbon\Carbon::parse($course->pivot->assigned_date)->format('M d, Y') }}</p>
                             </div>
                             @endif
                         </div>

@@ -22,7 +22,7 @@ class TeacherPortalController extends Controller
 
         $teacher->load([
             'courses' => function($q) {
-                $q->where('status', 'active')->orWhere('status', 'assigned');
+                $q->wherePivot('status', 'active')->orWherePivot('status', 'assigned');
             },
             'attendances' => function($q) {
                 $q->whereMonth('date', Carbon::now()->month)
