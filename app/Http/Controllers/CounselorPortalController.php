@@ -38,13 +38,13 @@ class CounselorPortalController extends Controller
             'pending_tasks' => Task::where('assigned_to', $counselor->user_id)
                 ->where('status', 'pending')
                 ->count(),
-            'unread_messages' => $counselor->students()
-                ->withCount(['communications as unread_count' => function($q) {
-                    $q->where('direction', 'incoming')
-                      ->where('is_read', false);
-                }])
-                ->get()
-                ->sum('unread_count'),
+            'unread_messages' => Communication::whereHas('student', function($q) use ($counselor) {
+                    $q->where('counselor_id', $counselor->id);
+                })
+                ->where('direction', 'incoming')
+                ->where('requires_follow_up', true)
+                ->where('follow_up_completed', false)
+                ->count(),
         ];
 
         // Get recent students
