@@ -18,14 +18,14 @@ class VerifyEmailController extends Controller
         $user = $request->user();
         
         if ($user->hasVerifiedEmail()) {
-            if ($user->role_id == 3) {
-                return redirect()->intended("/" . '?verified=1');
-            }
-            if ($user->role_id == 4) {
-                return redirect()->route('portal.dashboard')->with('verified', true);
-            }
-            if ($user->role_id == 6) {
-                return redirect()->route('teacher.dashboard')->with('verified', true);
+            switch($user->role_id) {
+                case 1: case 2: return redirect()->route('consultancy.dashboard')->with('verified', true);
+                case 3: return redirect()->route('editor.dashboard')->with('verified', true);
+                case 4: return redirect()->route('portal.dashboard')->with('verified', true);
+                case 5: return redirect()->route('employee.dashboard')->with('verified', true);
+                case 6: return redirect()->route('teacher.dashboard')->with('verified', true);
+                case 7: return redirect()->route('hr.dashboard')->with('verified', true);
+                case 8: return redirect()->route('counselor.dashboard')->with('verified', true);
             }
             return redirect()->intended(RouteServiceProvider::HOME . '?verified=1');
         }
@@ -34,14 +34,14 @@ class VerifyEmailController extends Controller
             event(new Verified($user));
         }
         
-        if ($user->role_id == 3) {
-            return redirect()->intended("/" . '?verified=1');
-        }
-        if ($user->role_id == 4) {
-            return redirect()->route('portal.dashboard')->with('verified', true);
-        }
-        if ($user->role_id == 6) {
-            return redirect()->route('teacher.dashboard')->with('verified', true);
+        switch($user->role_id) {
+            case 1: case 2: return redirect()->route('consultancy.dashboard')->with('verified', true);
+            case 3: return redirect()->route('editor.dashboard')->with('verified', true);
+            case 4: return redirect()->route('portal.dashboard')->with('verified', true);
+            case 5: return redirect()->route('employee.dashboard')->with('verified', true);
+            case 6: return redirect()->route('teacher.dashboard')->with('verified', true);
+            case 7: return redirect()->route('hr.dashboard')->with('verified', true);
+            case 8: return redirect()->route('counselor.dashboard')->with('verified', true);
         }
         return redirect()->intended(RouteServiceProvider::HOME . '?verified=1');
     }

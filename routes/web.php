@@ -18,6 +18,10 @@ use App\Http\Controllers\CounselorController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\StudentPortalController;
 use App\Http\Controllers\TeacherPortalController;
+use App\Http\Controllers\EditorPortalController;
+use App\Http\Controllers\EmployeePortalController;
+use App\Http\Controllers\HRPortalController;
+use App\Http\Controllers\CounselorPortalController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UniversityController;
 use App\Http\Controllers\ConsultancyProfileController;
@@ -132,6 +136,21 @@ Route::middleware(['auth', 'verified'])->prefix('portal')->name('portal.')->grou
     Route::post('/messages', [StudentPortalController::class, 'sendMessage'])->name('messages.send');
 });
 
+// Editor Portal Routes (Role: 3 - Editor)
+Route::middleware(['auth', 'verified', 'role:3'])->prefix('editor')->name('editor.')->group(function () {
+    Route::get('/dashboard', [EditorPortalController::class, 'dashboard'])->name('dashboard');
+    Route::get('/profile', [EditorPortalController::class, 'profile'])->name('profile');
+    Route::put('/profile', [EditorPortalController::class, 'updateProfile'])->name('profile.update');
+});
+
+// Employee Portal Routes (Role: 5 - Employee)
+Route::middleware(['auth', 'verified', 'role:5'])->prefix('employee')->name('employee.')->group(function () {
+    Route::get('/dashboard', [EmployeePortalController::class, 'dashboard'])->name('dashboard');
+    Route::get('/attendance', [EmployeePortalController::class, 'attendance'])->name('attendance');
+    Route::get('/profile', [EmployeePortalController::class, 'profile'])->name('profile');
+    Route::put('/profile', [EmployeePortalController::class, 'updateProfile'])->name('profile.update');
+});
+
 // Teacher Portal Routes (Role: 6 - Teacher)
 Route::middleware(['auth', 'verified', 'role:6'])->prefix('teacher')->name('teacher.')->group(function () {
     Route::get('/dashboard', [TeacherPortalController::class, 'dashboard'])->name('dashboard');
@@ -141,6 +160,26 @@ Route::middleware(['auth', 'verified', 'role:6'])->prefix('teacher')->name('teac
     Route::get('/payments', [TeacherPortalController::class, 'payments'])->name('payments');
     Route::get('/profile', [TeacherPortalController::class, 'profile'])->name('profile');
     Route::put('/profile', [TeacherPortalController::class, 'updateProfile'])->name('profile.update');
+});
+
+// HR Portal Routes (Role: 7 - HR)
+Route::middleware(['auth', 'verified', 'role:7'])->prefix('hr')->name('hr.')->group(function () {
+    Route::get('/dashboard', [HRPortalController::class, 'dashboard'])->name('dashboard');
+    Route::get('/employees', [HRPortalController::class, 'employees'])->name('employees');
+    Route::get('/attendance', [HRPortalController::class, 'attendance'])->name('attendance');
+    Route::get('/profile', [HRPortalController::class, 'profile'])->name('profile');
+    Route::put('/profile', [HRPortalController::class, 'updateProfile'])->name('profile.update');
+});
+
+// Counselor Portal Routes (Role: 8 - Counselor)
+Route::middleware(['auth', 'verified', 'role:8'])->prefix('counselor')->name('counselor.')->group(function () {
+    Route::get('/dashboard', [CounselorPortalController::class, 'dashboard'])->name('dashboard');
+    Route::get('/students', [CounselorPortalController::class, 'students'])->name('students');
+    Route::get('/applications', [CounselorPortalController::class, 'applications'])->name('applications');
+    Route::get('/tasks', [CounselorPortalController::class, 'tasks'])->name('tasks');
+    Route::get('/messages', [CounselorPortalController::class, 'messages'])->name('messages');
+    Route::get('/profile', [CounselorPortalController::class, 'profile'])->name('profile');
+    Route::put('/profile', [CounselorPortalController::class, 'updateProfile'])->name('profile.update');
 });
 
 // Public University Routes

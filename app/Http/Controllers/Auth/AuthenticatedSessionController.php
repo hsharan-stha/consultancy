@@ -46,24 +46,23 @@ class AuthenticatedSessionController extends Controller
         // Proceed to login and create session
         $request->session()->regenerate();
 
-        // Your redirect logic
-        if ($user->role_id == 3) {
-            return redirect('/');
-        }
-        
-        // Redirect students to portal dashboard
-        if ($user->role_id == 4) {
-            return redirect()->route('portal.dashboard');
-        }
-        
-        // Redirect teachers to teacher portal dashboard
-        if ($user->role_id == 6) {
-            return redirect()->route('teacher.dashboard');
-        }
-        
-        // Redirect admin/editor to consultancy dashboard
-        if ($user->role_id == 1 || $user->role_id == 2) {
-            return redirect()->route('consultancy.dashboard');
+        // Redirect based on role
+        switch($user->role_id) {
+            case 1: // Super Admin
+            case 2: // Admin
+                return redirect()->route('consultancy.dashboard');
+            case 3: // Editor
+                return redirect()->route('editor.dashboard');
+            case 4: // Student
+                return redirect()->route('portal.dashboard');
+            case 5: // Employee
+                return redirect()->route('employee.dashboard');
+            case 6: // Teacher
+                return redirect()->route('teacher.dashboard');
+            case 7: // HR
+                return redirect()->route('hr.dashboard');
+            case 8: // Counselor
+                return redirect()->route('counselor.dashboard');
         }
 
         return redirect()->intended(RouteServiceProvider::HOME);
