@@ -17,7 +17,7 @@
                 </div>
             @endif
 
-            <form action="{{ route('consultancy.students.update', $student) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+            <form id="update-student-form" action="{{ route('consultancy.students.update', $student) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
                 @csrf
                 @method('PUT')
 
@@ -158,19 +158,19 @@
                         </div>
                     </div>
                 </div>
+            </form>
 
-                <div class="flex justify-between">
-                    <form action="{{ route('consultancy.students.destroy', $student) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this student?')">
+                <div class="flex justify-between mt-6">
+                    <form action="{{ route('consultancy.students.destroy', $student) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this student?');">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg">Delete Student</button>
                     </form>
                     <div class="space-x-4">
                         <a href="{{ route('consultancy.students.show', $student) }}" class="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg">Cancel</a>
-                        <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">Update Student</button>
+                        <button type="submit" form="update-student-form" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">Update Student</button>
                     </div>
                 </div>
-            </form>
         </div>
     </div>
 </x-app-layout>
