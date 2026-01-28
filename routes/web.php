@@ -26,6 +26,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UniversityController;
 use App\Http\Controllers\ConsultancyProfileController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\CourseController;
 
 /*
 |--------------------------------------------------------------------------
@@ -104,6 +105,11 @@ Route::middleware(['auth', 'verified', 'role:1,2'])->prefix('consultancy')->name
     
     // Counselors Management
     Route::resource('counselors', CounselorController::class);
+
+    // Courses Management
+    Route::resource('courses', CourseController::class);
+    Route::post('courses/{course}/teachers', [CourseController::class, 'assignTeacher'])->name('courses.assign-teacher');
+    Route::delete('courses/{course}/teachers/{employee}', [CourseController::class, 'unassignTeacher'])->name('courses.unassign-teacher');
     
     // Reports
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
