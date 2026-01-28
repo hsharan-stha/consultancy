@@ -71,7 +71,7 @@ class ApplicationController extends Controller
         $student = Student::find($validated['student_id']);
         $student->update(['status' => 'applied']);
 
-        return redirect()->route('applications.show', $application)
+        return redirect()->route('consultancy.applications.show', $application)
             ->with('success', 'Application created successfully! ID: ' . $application->application_id);
     }
 
@@ -118,14 +118,14 @@ class ApplicationController extends Controller
 
         $application->update($validated);
 
-        return redirect()->route('applications.show', $application)
+        return redirect()->route('consultancy.applications.show', $application)
             ->with('success', 'Application updated successfully!');
     }
 
     public function destroy(Application $application)
     {
         $application->delete();
-        return redirect()->route('applications.index')
+        return redirect()->route('consultancy.applications.index')
             ->with('success', 'Application deleted successfully!');
     }
 }
