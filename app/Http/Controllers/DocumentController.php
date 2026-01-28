@@ -60,7 +60,8 @@ class DocumentController extends Controller
         $student = Student::find($validated['student_id']);
         $file = $request->file('file');
         $fileName = $student->student_id . '_' . $validated['document_type'] . '_' . time() . '.' . $file->getClientOriginalExtension();
-        
+        $fileSizeKb = round($file->getSize() / 1024);
+
         $path = public_path('documents/' . $student->student_id);
         if (!file_exists($path)) {
             mkdir($path, 0755, true);
@@ -74,7 +75,7 @@ class DocumentController extends Controller
             'file_path' => 'documents/' . $student->student_id . '/' . $fileName,
             'file_name' => $file->getClientOriginalName(),
             'file_type' => $file->getClientOriginalExtension(),
-            'file_size' => round($file->getSize() / 1024),
+            'file_size' => $fileSizeKb,
             'expiry_date' => $validated['expiry_date'],
             'notes' => $validated['notes'],
             'status' => 'pending',

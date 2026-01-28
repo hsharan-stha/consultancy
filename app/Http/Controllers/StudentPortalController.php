@@ -99,7 +99,13 @@ class StudentPortalController extends Controller
 
         $file = $request->file('file');
         $fileName = $student->student_id . '_' . time() . '_' . $file->getClientOriginalName();
-        $file->move(public_path('documents/students'), $fileName);
+        $fileSizeKb = round($file->getSize() / 1024);
+
+        $docPath = public_path('documents/students');
+        if (!is_dir($docPath)) {
+            mkdir($docPath, 0755, true);
+        }
+        $file->move($docPath, $fileName);
 
         Document::create([
             'student_id' => $student->id,
@@ -108,7 +114,7 @@ class StudentPortalController extends Controller
             'file_path' => 'documents/students/' . $fileName,
             'file_name' => $file->getClientOriginalName(),
             'file_type' => $file->getClientOriginalExtension(),
-            'file_size' => $file->getSize() / 1024, // KB
+            'file_size' => $fileSizeKb,
             'status' => 'pending',
         ]);
 
