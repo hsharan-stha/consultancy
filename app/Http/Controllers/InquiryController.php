@@ -58,7 +58,7 @@ class InquiryController extends Controller
 
         $inquiry = Inquiry::create($validated);
 
-        return redirect()->route('inquiries.show', $inquiry)
+        return redirect()->route('consultancy.inquiries.show', $inquiry)
             ->with('success', 'Inquiry created successfully! ID: ' . $inquiry->inquiry_id);
     }
 
@@ -91,7 +91,7 @@ class InquiryController extends Controller
 
         $inquiry->update($validated);
 
-        return redirect()->route('inquiries.show', $inquiry)
+        return redirect()->route('consultancy.inquiries.show', $inquiry)
             ->with('success', 'Inquiry updated successfully!');
     }
 
@@ -123,7 +123,7 @@ class InquiryController extends Controller
             'status' => 'converted',
         ]);
 
-        return redirect()->route('students.edit', $student)
+        return redirect()->route('consultancy.students.edit', $student)
             ->with('success', 'Inquiry converted to student! Please complete the student profile.');
     }
 }
