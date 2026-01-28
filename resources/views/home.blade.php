@@ -232,8 +232,8 @@
     </section>
     <section id="about" class="py-16 lg:py-24 bg-white">
         <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 class="text-3xl font-bold text-slate-900 mb-6">Get Started</h2>
-            <p class="text-slate-600 text-lg">Contact your administrator to create and publish your consultancy profile. Once it’s live, this page will display your branding, services, and contact details.</p>
+            <h2 class="text-3xl font-bold text-slate-900 mb-6">Need an account?</h2>
+            <p class="text-slate-600 text-lg">User accounts are created by your administrator. Contact your administrator for access. Once you have an account, use Sign In above to access the system.</p>
         </div>
     </section>
 

@@ -77,14 +77,8 @@
             </div>
         </form>
 
-        <!-- Register Link -->
         <div class="text-center pt-4 border-t border-slate-200">
-            <p class="text-sm text-slate-600">
-                Don't have an account?
-                <a href="{{ route('register') }}" class="font-semibold text-indigo-600 hover:text-indigo-700">
-                    {{ __('Register') }}
-                </a>
-            </p>
+            <p class="text-sm text-slate-600">{{ __('Contact your administrator for a user account.') }}</p>
         </div>
     </div>
 </x-guest-layout>

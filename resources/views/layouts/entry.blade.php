@@ -200,9 +200,6 @@
                         <a href="{{ route('login') }}" class="block w-full px-4 py-2 text-center bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold rounded-lg hover:from-primary-600 hover:to-primary-700 transition-all shadow-md hover:shadow-lg">
                             {{ __('home.signin') }}
                         </a>
-                        <a href="{{ route('register') }}" class="block w-full px-4 py-2 text-center bg-gradient-to-r from-accent-500 to-accent-600 text-white font-bold rounded-lg hover:from-accent-600 hover:to-accent-700 transition-all shadow-md hover:shadow-lg">
-                                        {{ __('home.register') }}
-                                    </a>
                                 </div>
                 @endif
                             </div>
@@ -267,15 +264,12 @@
                 </button>
             </div>
 
-            <div class="flex gap-4 pt-2">
-                <a href="{{ route('register') }}"
-                    class="flex-1 inline-block text-center px-4 py-2 bg-gradient-to-r from-accent-500 to-accent-600 text-white font-bold rounded-lg hover:from-accent-600 hover:to-accent-700 transition-all shadow-md hover:shadow-lg">
-                    Register
-                </a>
+            <div class="space-y-3 pt-2">
                 <a href="{{ route('login') }}"
-                    class="flex-1 inline-block text-center px-4 py-2 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold rounded-lg hover:from-primary-600 hover:to-primary-700 transition-all shadow-md hover:shadow-lg">
+                    class="block w-full text-center px-4 py-2 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold rounded-lg hover:from-primary-600 hover:to-primary-700 transition-all shadow-md hover:shadow-lg">
                     Sign In
                 </a>
+                <p class="text-slate-600 text-sm text-center">Contact your administrator for a user account.</p>
             </div>
         </div>
     </div>

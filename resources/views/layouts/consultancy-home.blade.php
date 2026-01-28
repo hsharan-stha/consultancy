@@ -154,10 +154,7 @@
                             <button type="submit" class="text-slate-600 hover:text-red-600 font-medium transition-colors">Logout</button>
                         </form>
                     @else
-                        <a href="{{ route('login') }}" class="text-slate-600 hover:text-indigo-600 font-medium transition-colors">Sign In</a>
-                        <a href="{{ route('register') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors">
-                            Get Started
-                        </a>
+                        <a href="{{ route('login') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors">Sign In</a>
                     @endauth
                 </div>
 
@@ -214,8 +211,7 @@
                         <button type="submit" class="block py-2 text-left text-red-600 font-medium w-full">Logout</button>
                     </form>
                 @else
-                    <a href="{{ route('login') }}" class="block py-2 text-slate-600 font-medium">Sign In</a>
-                    <a href="{{ route('register') }}" class="block py-2 text-indigo-600 font-semibold">Get Started</a>
+                    <a href="{{ route('login') }}" class="block py-2 text-indigo-600 font-semibold">Sign In</a>
                 @endauth
             </div>
         </nav>
