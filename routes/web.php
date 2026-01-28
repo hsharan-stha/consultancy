@@ -139,6 +139,7 @@ Route::middleware(['auth', 'verified'])->prefix('portal')->name('portal.')->grou
     Route::get('/applications', [StudentPortalController::class, 'applications'])->name('applications');
     Route::get('/payments', [StudentPortalController::class, 'payments'])->name('payments');
     Route::get('/tasks', [StudentPortalController::class, 'tasks'])->name('tasks');
+    Route::patch('/tasks/{task}/status', [StudentPortalController::class, 'updateTaskStatus'])->name('tasks.updateStatus');
     Route::get('/messages', [StudentPortalController::class, 'messages'])->name('messages');
     Route::post('/messages', [StudentPortalController::class, 'sendMessage'])->name('messages.send');
 });

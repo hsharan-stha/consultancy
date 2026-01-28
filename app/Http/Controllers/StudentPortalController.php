@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Student;
+use App\Models\Task;
 use App\Models\Document;
 use App\Models\Application;
 use App\Models\Payment;
@@ -156,6 +157,31 @@ class StudentPortalController extends Controller
             ->get();
         
         return view('portal.tasks', compact('student', 'tasks'));
+    }
+
+    public function updateTaskStatus(Request $request, Task $task)
+    {
+        $student = $this->getAuthenticatedStudent();
+        if (!$student) {
+            return redirect()->route('home')->with('error', 'No student profile found.');
+        }
+        if ($task->student_id !== $student->id) {
+            abort(403, 'You can only update tasks assigned to you.');
+        }
+
+        $validated = $request->validate([
+            'status' => 'required|in:pending,in_progress,completed',
+        ]);
+
+        $update = ['status' => $validated['status']];
+        if ($validated['status'] === 'completed') {
+            $update['completed_at'] = now();
+        }
+
+        $task->update($update);
+
+        return redirect()->route('portal.tasks')
+            ->with('success', 'Task status updated to ' . str_replace('_', ' ', $validated['status']) . '.');
     }
 
     public function messages()
