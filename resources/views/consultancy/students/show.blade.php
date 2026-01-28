@@ -18,6 +18,15 @@
                     {{ session('success') }}
                 </div>
             @endif
+            @if ($errors->any())
+                <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                    <ul class="list-disc list-inside">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Main Info -->
@@ -86,19 +95,47 @@
                             <a href="{{ route('consultancy.documents.create', ['student_id' => $student->id]) }}" class="text-blue-600 hover:text-blue-800 text-sm">+ Upload Document</a>
                         </div>
                         @if($student->documents->count())
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div class="space-y-3">
                                 @foreach($student->documents as $doc)
-                                <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg flex justify-between items-center">
-                                    <div>
-                                        <p class="font-medium text-gray-900 dark:text-white">{{ $doc->title }}</p>
-                                        <p class="text-xs text-gray-500">{{ $doc->document_type }}</p>
+                                <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                                    <div class="flex flex-wrap justify-between items-start gap-3">
+                                        <div class="flex-1 min-w-0">
+                                            <p class="font-medium text-gray-900 dark:text-white">{{ $doc->title }}</p>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $doc->document_type }}</p>
+                                            <div class="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                                <span>File: {{ $doc->file_name }}</span>
+                                                @if($doc->file_size)
+                                                <span>{{ number_format($doc->file_size) }} KB</span>
+                                                @endif
+                                                <span>Uploaded: {{ $doc->created_at->format('M d, Y H:i') }}</span>
+                                                @if($doc->expiry_date)
+                                                <span>Expires: {{ $doc->expiry_date->format('M d, Y') }}</span>
+                                                @endif
+                                            </div>
+                                            @if($doc->notes)
+                                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $doc->notes }}</p>
+                                            @endif
+                                        </div>
+                                        <div class="flex items-center gap-2 flex-shrink-0">
+                                            <span class="px-2 py-1 text-xs rounded-full 
+                                                @if($doc->status == 'verified') bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
+                                                @elseif($doc->status == 'rejected') bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200
+                                                @else bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 @endif">
+                                                {{ ucfirst($doc->status) }}
+                                            </span>
+                                            <a href="{{ route('consultancy.documents.show', $doc) }}" class="text-blue-600 hover:text-blue-800 text-sm whitespace-nowrap">View</a>
+                                            @if($doc->status == 'pending')
+                                            <form method="POST" action="{{ route('consultancy.documents.verify', $doc) }}" class="inline" style="display:inline;">
+                                                @csrf
+                                                <input type="hidden" name="status" value="verified">
+                                                <button type="submit" name="verify" value="1" class="text-green-600 hover:text-green-800 text-sm cursor-pointer bg-transparent border-0 p-0">Verify</button>
+                                            </form>
+                                            @endif
+                                        </div>
                                     </div>
-                                    <span class="px-2 py-1 text-xs rounded-full 
-                                        @if($doc->status == 'verified') bg-green-100 text-green-800
-                                        @elseif($doc->status == 'rejected') bg-red-100 text-red-800
-                                        @else bg-yellow-100 text-yellow-800 @endif">
-                                        {{ ucfirst($doc->status) }}
-                                    </span>
+                                    @if($doc->status == 'rejected' && $doc->rejection_reason)
+                                    <p class="text-xs text-red-600 dark:text-red-400 mt-2">Reason: {{ $doc->rejection_reason }}</p>
+                                    @endif
                                 </div>
                                 @endforeach
                             </div>

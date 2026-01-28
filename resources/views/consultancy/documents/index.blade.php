@@ -22,6 +22,15 @@
                     {{ session('success') }}
                 </div>
             @endif
+            @if ($errors->any())
+                <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                    <ul class="list-disc list-inside">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
             <!-- Filters -->
             <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6 mb-6">
@@ -95,18 +104,21 @@
                                 {{ $document->created_at->format('M d, Y') }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <a href="{{ route('consultancy.documents.show', $document) }}" class="text-blue-600 hover:text-blue-900 dark:text-blue-400">View</a>
-                                @if($document->status == 'pending')
-                                <form method="POST" action="{{ route('consultancy.documents.verify', $document) }}" class="inline">
-                                    @csrf
-                                    <button type="submit" name="status" value="verified" class="text-green-600 hover:text-green-900 dark:text-green-400 ml-2">Verify</button>
-                                </form>
-                                @endif
-                                <form method="POST" action="{{ route('consultancy.documents.destroy', $document) }}" class="inline" onsubmit="return confirm('Are you sure?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-400 ml-2">Delete</button>
-                                </form>
+                                <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                                    <a href="{{ route('consultancy.documents.show', $document) }}" class="text-blue-600 hover:text-blue-900 dark:text-blue-400">View</a>
+                                    @if($document->status == 'pending')
+                                    <form method="POST" action="{{ route('consultancy.documents.verify', $document) }}" class="inline" style="display:inline;">
+                                        @csrf
+                                        <input type="hidden" name="status" value="verified">
+                                        <button type="submit" name="verify" value="1" class="text-green-600 hover:text-green-900 dark:text-green-400 cursor-pointer bg-transparent border-0 p-0 font-medium text-sm">Verify</button>
+                                    </form>
+                                    @endif
+                                    <form method="POST" action="{{ route('consultancy.documents.destroy', $document) }}" class="inline" style="display:inline;" onsubmit="return confirm('Are you sure?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-400 cursor-pointer bg-transparent border-0 p-0 font-medium text-sm">Delete</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                         @empty

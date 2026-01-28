@@ -93,9 +93,16 @@ class DocumentController extends Controller
 
     public function verify(Request $request, Document $document)
     {
+        // Normalize status (form may send via hidden input or button)
+        $status = trim((string) $request->input('status', ''));
+        if ($status === '' && $request->has('verify')) {
+            $status = 'verified';
+        }
+        $request->merge(['status' => $status]);
+
         $validated = $request->validate([
             'status' => 'required|in:verified,rejected',
-            'rejection_reason' => 'required_if:status,rejected|nullable|string',
+            'rejection_reason' => 'required_if:status,rejected|nullable|string|max:1000',
         ]);
 
         $document->update([

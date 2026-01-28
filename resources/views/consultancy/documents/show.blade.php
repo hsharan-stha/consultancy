@@ -12,6 +12,15 @@
 
     <div class="py-6">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+            @if ($errors->any())
+                <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                    <ul class="list-disc list-inside">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
             <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg overflow-hidden">
                 <div class="p-6 space-y-6">
                     <!-- Document Info -->
@@ -97,14 +106,15 @@
                     <div class="flex gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                         <form method="POST" action="{{ route('consultancy.documents.verify', $document) }}" class="flex-1">
                             @csrf
-                            <button type="submit" name="status" value="verified" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
+                            <input type="hidden" name="status" value="verified">
+                            <button type="submit" name="verify" value="1" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
                                 Verify Document
                             </button>
                         </form>
                         <form method="POST" action="{{ route('consultancy.documents.verify', $document) }}" class="flex-1">
                             @csrf
                             <input type="hidden" name="status" value="rejected">
-                            <input type="text" name="rejection_reason" placeholder="Rejection reason..." required
+                            <input type="text" name="rejection_reason" placeholder="Rejection reason (required)" required
                                 class="w-full mb-2 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                             <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
                                 Reject Document
