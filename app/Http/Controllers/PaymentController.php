@@ -81,7 +81,7 @@ class PaymentController extends Controller
 
         $payment = Payment::create($validated);
 
-        return redirect()->route('payments.show', $payment)
+        return redirect()->route('consultancy.payments.show', $payment)
             ->with('success', 'Payment created successfully! ID: ' . $payment->payment_id);
     }
 
@@ -115,7 +115,7 @@ class PaymentController extends Controller
 
         $payment->update($validated);
 
-        return redirect()->route('payments.show', $payment)
+        return redirect()->route('consultancy.payments.show', $payment)
             ->with('success', 'Payment updated successfully!');
     }
 
@@ -144,14 +144,14 @@ class PaymentController extends Controller
 
         $payment->save();
 
-        return redirect()->route('payments.show', $payment)
+        return redirect()->route('consultancy.payments.show', $payment)
             ->with('success', 'Payment recorded successfully!');
     }
 
     public function destroy(Payment $payment)
     {
         $payment->delete();
-        return redirect()->route('payments.index')
+        return redirect()->route('consultancy.payments.index')
             ->with('success', 'Payment deleted successfully!');
     }
 }
