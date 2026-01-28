@@ -60,6 +60,7 @@
                             <label for="file" class="block text-sm font-medium text-gray-700 dark:text-gray-300">File *</label>
                             <input type="file" name="file" id="file" accept=".pdf,.jpg,.jpeg,.png" required
                                 class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                            <p class="mt-1 text-sm text-gray-500">Accepted formats: PDF, JPG, PNG (Max: 50MB)</p>
                             @error('file')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror

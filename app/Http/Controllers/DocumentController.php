@@ -52,7 +52,7 @@ class DocumentController extends Controller
             'student_id' => 'required|exists:students,id',
             'document_type' => 'required|string|max:255',
             'title' => 'required|string|max:255',
-            'file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:51200',
             'expiry_date' => 'nullable|date',
             'notes' => 'nullable|string',
         ]);

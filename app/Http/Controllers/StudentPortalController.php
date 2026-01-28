@@ -94,7 +94,7 @@ class StudentPortalController extends Controller
         $validated = $request->validate([
             'document_type' => 'required|string|max:255',
             'title' => 'required|string|max:255',
-            'file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:51200',
         ]);
 
         $file = $request->file('file');

@@ -39,7 +39,7 @@
                             <div>
                                 <x-input-label for="file" :value="__('File')" />
                                 <input type="file" name="file" id="file" accept=".pdf,.jpg,.jpeg,.png" required class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
-                                <p class="mt-1 text-sm text-gray-500">Accepted formats: PDF, JPG, PNG (Max: 5MB)</p>
+                                <p class="mt-1 text-sm text-gray-500">Accepted formats: PDF, JPG, PNG (Max: 50MB)</p>
                                 <x-input-error :messages="$errors->get('file')" class="mt-2" />
                             </div>
                             <div>
