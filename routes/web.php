@@ -132,6 +132,7 @@ Route::middleware(['auth', 'verified'])->prefix('portal')->name('portal.')->grou
     Route::post('/documents', [StudentPortalController::class, 'uploadDocument'])->name('documents.upload');
     Route::get('/applications', [StudentPortalController::class, 'applications'])->name('applications');
     Route::get('/payments', [StudentPortalController::class, 'payments'])->name('payments');
+    Route::get('/tasks', [StudentPortalController::class, 'tasks'])->name('tasks');
     Route::get('/messages', [StudentPortalController::class, 'messages'])->name('messages');
     Route::post('/messages', [StudentPortalController::class, 'sendMessage'])->name('messages.send');
 });

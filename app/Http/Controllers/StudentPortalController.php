@@ -26,7 +26,7 @@ class StudentPortalController extends Controller
             'documents',
             'payments',
             'tasks' => function($q) {
-                $q->where('status', 'pending')->orderBy('due_date');
+                $q->where('status', 'pending')->orderBy('due_date')->with('assignedTo');
             }
         ]);
 
@@ -141,6 +141,21 @@ class StudentPortalController extends Controller
             ->get();
         
         return view('portal.payments', compact('student', 'payments'));
+    }
+
+    public function tasks()
+    {
+        $student = $this->getAuthenticatedStudent();
+        if (!$student) {
+            return redirect()->route('home')->with('error', 'No student profile found.');
+        }
+        $tasks = $student->tasks()
+            ->with('assignedTo')
+            ->orderByRaw("CASE WHEN status = 'pending' THEN 0 ELSE 1 END")
+            ->orderBy('due_date')
+            ->get();
+        
+        return view('portal.tasks', compact('student', 'tasks'));
     }
 
     public function messages()

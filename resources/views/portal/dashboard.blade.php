@@ -79,6 +79,41 @@
                         </div>
                     </div>
 
+                    <!-- Tasks Assigned to You -->
+                    <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Tasks Assigned to You</h3>
+                            <a href="{{ route('portal.tasks') }}" class="text-blue-600 hover:text-blue-800 text-sm">View All</a>
+                        </div>
+                        @if($student->tasks && $student->tasks->count() > 0)
+                        <div class="space-y-3">
+                            @foreach($student->tasks->take(5) as $task)
+                            <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 {{ $task->due_date && $task->due_date->isPast() ? 'border-l-4 border-l-red-500' : '' }}">
+                                <div class="flex justify-between items-start gap-2">
+                                    <div>
+                                        <p class="font-medium text-gray-900 dark:text-white">{{ $task->title }}</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                            Due: {{ $task->due_date ? $task->due_date->format('M d, Y') : 'No date' }}
+                                            @if($task->assignedTo)
+                                            · From: {{ $task->assignedTo->name }}
+                                            @endif
+                                        </p>
+                                    </div>
+                                    <span class="px-2 py-1 text-xs rounded-full shrink-0
+                                        @if($task->status == 'completed') bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
+                                        @elseif($task->priority == 'urgent') bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200
+                                        @else bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 @endif">
+                                        {{ ucfirst(str_replace('_', ' ', $task->status)) }}
+                                    </span>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                        @else
+                        <p class="text-gray-500 dark:text-gray-400 text-center py-4">No pending tasks assigned to you.</p>
+                        @endif
+                    </div>
+
                     <!-- Pending Payments -->
                     @if($pendingPayments->count())
                     <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
@@ -127,16 +162,19 @@
                     <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Links</h3>
                         <div class="space-y-2">
-                            <a href="{{ route('portal.documents') }}" class="block p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100">
+                            <a href="{{ route('portal.tasks') }}" class="block p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600">
+                                <span class="text-gray-900 dark:text-white">My Tasks</span>
+                            </a>
+                            <a href="{{ route('portal.documents') }}" class="block p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600">
                                 <span class="text-gray-900 dark:text-white">Upload Documents</span>
                             </a>
-                            <a href="{{ route('portal.applications') }}" class="block p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100">
+                            <a href="{{ route('portal.applications') }}" class="block p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600">
                                 <span class="text-gray-900 dark:text-white">My Applications</span>
                             </a>
-                            <a href="{{ route('portal.payments') }}" class="block p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100">
+                            <a href="{{ route('portal.payments') }}" class="block p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600">
                                 <span class="text-gray-900 dark:text-white">Payment History</span>
                             </a>
-                            <a href="{{ route('portal.messages') }}" class="block p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100">
+                            <a href="{{ route('portal.messages') }}" class="block p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600">
                                 <span class="text-gray-900 dark:text-white">Messages</span>
                             </a>
                         </div>
