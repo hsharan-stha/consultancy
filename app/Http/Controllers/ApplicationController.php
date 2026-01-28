@@ -103,7 +103,7 @@ class ApplicationController extends Controller
             'application_date' => 'nullable|date',
             'submission_deadline' => 'nullable|date',
             'submitted_at' => 'nullable|date',
-            'interview_date' => 'nullable|datetime',
+            'interview_date' => 'nullable|date',
             'interview_mode' => 'nullable|string|max:255',
             'interview_notes' => 'nullable|string',
             'result_date' => 'nullable|date',
