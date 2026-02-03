@@ -40,7 +40,8 @@ class TaskController extends Controller
             ->orderBy('due_date')
             ->paginate(20);
 
-        $users = User::whereIn('role_id', [1, 2])->get();
+        // Include all staff roles (Admin, Editor, Employee, Teacher, HR, Counselor) for "Assigned To"
+        $users = User::whereIn('role_id', [1, 2, 3, 5, 6, 7, 8])->orderBy('name')->get();
         
         return view('consultancy.tasks.index', compact('tasks', 'users'));
     }
@@ -48,7 +49,7 @@ class TaskController extends Controller
     public function create(Request $request)
     {
         $students = Student::orderBy('first_name')->get();
-        $users = User::whereIn('role_id', [1, 2])->get();
+        $users = User::whereIn('role_id', [1, 2, 3, 5, 6, 7, 8])->orderBy('name')->get();
         $selectedStudent = $request->student_id ? Student::find($request->student_id) : null;
         
         return view('consultancy.tasks.create', compact('students', 'users', 'selectedStudent'));
@@ -87,7 +88,7 @@ class TaskController extends Controller
     public function edit(Task $task)
     {
         $students = Student::orderBy('first_name')->get();
-        $users = User::whereIn('role_id', [1, 2])->get();
+        $users = User::whereIn('role_id', [1, 2, 3, 5, 6, 7, 8])->orderBy('name')->get();
         
         return view('consultancy.tasks.edit', compact('task', 'students', 'users'));
     }

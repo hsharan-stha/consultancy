@@ -17,6 +17,7 @@
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Email</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Status</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Applications</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -26,15 +27,16 @@
                                 <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">{{ $student->first_name }} {{ $student->last_name }}</td>
                                 <td class="px-4 py-3 text-sm text-gray-500">{{ $student->email }}</td>
                                 <td class="px-4 py-3">
-                                    <span class="px-2 py-1 text-xs rounded-full {{ $student->status == 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
-                                        {{ ucfirst($student->status) }}
+                                    <span class="px-2 py-1 text-xs rounded-full {{ $student->status == 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' }}">
+                                        {{ ucfirst($student->status ?? 'N/A') }}
                                     </span>
                                 </td>
                                 <td class="px-4 py-3 text-sm text-gray-500">{{ $student->applications->count() }}</td>
+                                <td class="px-4 py-3 text-sm"><a href="{{ route('counselor.students.show', $student) }}" class="text-blue-600 hover:text-blue-800 dark:text-blue-400">View</a></td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="5" class="px-4 py-3 text-center text-gray-500">No students assigned</td>
+                                <td colspan="6" class="px-4 py-3 text-center text-gray-500 dark:text-gray-400">No students assigned</td>
                             </tr>
                             @endforelse
                         </tbody>

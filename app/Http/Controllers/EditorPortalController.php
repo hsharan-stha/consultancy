@@ -12,6 +12,7 @@ use Carbon\Carbon;
 
 class EditorPortalController extends Controller
 {
+    // Editors can view all inquiries, applications, and tasks assigned to them
     public function dashboard()
     {
         $user = Auth::user();
@@ -64,5 +65,57 @@ class EditorPortalController extends Controller
 
         return redirect()->route('editor.profile')
             ->with('success', 'Profile updated successfully!');
+    }
+
+    public function inquiries(Request $request)
+    {
+        $query = Inquiry::with(['student', 'counselor.user']);
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        $inquiries = $query->orderBy('created_at', 'desc')->paginate(20);
+        return view('editor.inquiries', compact('inquiries'));
+    }
+
+    public function showInquiry(Inquiry $inquiry)
+    {
+        $inquiry->load(['student', 'counselor.user']);
+        return view('editor.inquiries-show', compact('inquiry'));
+    }
+
+    public function applications(Request $request)
+    {
+        $query = Application::with(['student', 'university']);
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        $applications = $query->orderBy('created_at', 'desc')->paginate(20);
+        return view('editor.applications', compact('applications'));
+    }
+
+    public function showApplication(Application $application)
+    {
+        $application->load(['student', 'university']);
+        return view('editor.applications-show', compact('application'));
+    }
+
+    public function tasks(Request $request)
+    {
+        $query = Task::with(['student', 'assignedTo'])
+            ->where('assigned_to', Auth::id());
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        $tasks = $query->orderBy('due_date', 'asc')->paginate(20);
+        return view('editor.tasks', compact('tasks'));
+    }
+
+    public function completeTask(Task $task)
+    {
+        if ($task->assigned_to !== Auth::id()) {
+            abort(403, 'You can only complete tasks assigned to you.');
+        }
+        $task->update(['status' => 'completed', 'completed_at' => now()]);
+        return redirect()->route('editor.tasks')->with('success', 'Task marked as completed.');
     }
 }

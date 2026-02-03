@@ -147,6 +147,12 @@ Route::middleware(['auth', 'verified'])->prefix('portal')->name('portal.')->grou
 // Editor Portal Routes (Role: 3 - Editor)
 Route::middleware(['auth', 'verified', 'role:3'])->prefix('editor')->name('editor.')->group(function () {
     Route::get('/dashboard', [EditorPortalController::class, 'dashboard'])->name('dashboard');
+    Route::get('/inquiries', [EditorPortalController::class, 'inquiries'])->name('inquiries');
+    Route::get('/inquiries/{inquiry}', [EditorPortalController::class, 'showInquiry'])->name('inquiries.show');
+    Route::get('/applications', [EditorPortalController::class, 'applications'])->name('applications');
+    Route::get('/applications/{application}', [EditorPortalController::class, 'showApplication'])->name('applications.show');
+    Route::get('/tasks', [EditorPortalController::class, 'tasks'])->name('tasks');
+    Route::patch('/tasks/{task}/complete', [EditorPortalController::class, 'completeTask'])->name('tasks.complete');
     Route::get('/profile', [EditorPortalController::class, 'profile'])->name('profile');
     Route::put('/profile', [EditorPortalController::class, 'updateProfile'])->name('profile.update');
 });
@@ -155,6 +161,8 @@ Route::middleware(['auth', 'verified', 'role:3'])->prefix('editor')->name('edito
 Route::middleware(['auth', 'verified', 'role:5'])->prefix('employee')->name('employee.')->group(function () {
     Route::get('/dashboard', [EmployeePortalController::class, 'dashboard'])->name('dashboard');
     Route::get('/attendance', [EmployeePortalController::class, 'attendance'])->name('attendance');
+    Route::post('/check-in', [EmployeePortalController::class, 'checkIn'])->name('check-in');
+    Route::post('/check-out', [EmployeePortalController::class, 'checkOut'])->name('check-out');
     Route::get('/profile', [EmployeePortalController::class, 'profile'])->name('profile');
     Route::put('/profile', [EmployeePortalController::class, 'updateProfile'])->name('profile.update');
 });
@@ -165,6 +173,8 @@ Route::middleware(['auth', 'verified', 'role:6'])->prefix('teacher')->name('teac
     Route::get('/courses', [TeacherPortalController::class, 'courses'])->name('courses');
     Route::get('/attendance', [TeacherPortalController::class, 'attendance'])->name('attendance');
     Route::post('/attendance', [TeacherPortalController::class, 'markAttendance'])->name('attendance.mark');
+    Route::get('/daily-log', [TeacherPortalController::class, 'dailyLog'])->name('daily-log');
+    Route::post('/daily-log', [TeacherPortalController::class, 'storeDailyLog'])->name('daily-log.store');
     Route::get('/payments', [TeacherPortalController::class, 'payments'])->name('payments');
     Route::get('/profile', [TeacherPortalController::class, 'profile'])->name('profile');
     Route::put('/profile', [TeacherPortalController::class, 'updateProfile'])->name('profile.update');
@@ -183,9 +193,14 @@ Route::middleware(['auth', 'verified', 'role:7'])->prefix('hr')->name('hr.')->gr
 Route::middleware(['auth', 'verified', 'role:8'])->prefix('counselor')->name('counselor.')->group(function () {
     Route::get('/dashboard', [CounselorPortalController::class, 'dashboard'])->name('dashboard');
     Route::get('/students', [CounselorPortalController::class, 'students'])->name('students');
+    Route::get('/students/{student}', [CounselorPortalController::class, 'showStudent'])->name('students.show');
     Route::get('/applications', [CounselorPortalController::class, 'applications'])->name('applications');
+    Route::get('/applications/{application}', [CounselorPortalController::class, 'showApplication'])->name('applications.show');
+    Route::patch('/applications/{application}/status', [CounselorPortalController::class, 'updateApplicationStatus'])->name('applications.update-status');
     Route::get('/tasks', [CounselorPortalController::class, 'tasks'])->name('tasks');
+    Route::patch('/tasks/{task}/complete', [CounselorPortalController::class, 'completeTask'])->name('tasks.complete');
     Route::get('/messages', [CounselorPortalController::class, 'messages'])->name('messages');
+    Route::post('/messages', [CounselorPortalController::class, 'sendMessage'])->name('messages.send');
     Route::get('/profile', [CounselorPortalController::class, 'profile'])->name('profile');
     Route::put('/profile', [CounselorPortalController::class, 'updateProfile'])->name('profile.update');
 });

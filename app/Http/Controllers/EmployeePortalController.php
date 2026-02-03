@@ -64,7 +64,9 @@ class EmployeePortalController extends Controller
             ->orderBy('date', 'asc')
             ->get();
 
-        return view('employee.dashboard', compact('employee', 'stats', 'recentAttendance', 'monthlyAttendance'));
+        $todayAttendance = $employee->attendances()->whereDate('date', Carbon::today())->first();
+
+        return view('employee.dashboard', compact('employee', 'stats', 'recentAttendance', 'monthlyAttendance', 'todayAttendance'));
     }
 
     public function attendance()
@@ -93,6 +95,54 @@ class EmployeePortalController extends Controller
         ];
 
         return view('employee.attendance', compact('employee', 'attendances', 'stats', 'month', 'year'));
+    }
+
+    public function checkIn(Request $request)
+    {
+        $employee = $this->getAuthenticatedEmployee();
+        if (!$employee) {
+            return redirect()->route('home')->with('error', 'No employee profile found.');
+        }
+        $today = Carbon::today();
+        $existing = $employee->attendances()->whereDate('date', $today)->first();
+        if ($existing && $existing->check_in) {
+            return redirect()->back()->with('error', 'Already checked in today.');
+        }
+        $attendance = $existing ?? EmployeeAttendance::create([
+            'employee_id' => $employee->id,
+            'date' => $today,
+            'status' => 'present',
+        ]);
+        $attendance->check_in = now();
+        $attendance->check_in_location = $request->input('location', 'Office');
+        $attendance->status = 'present';
+        $attendance->save();
+        return redirect()->back()->with('success', 'Checked in successfully!');
+    }
+
+    public function checkOut(Request $request)
+    {
+        $employee = $this->getAuthenticatedEmployee();
+        if (!$employee) {
+            return redirect()->route('home')->with('error', 'No employee profile found.');
+        }
+        $today = Carbon::today();
+        $attendance = $employee->attendances()->whereDate('date', $today)->first();
+        if (!$attendance || !$attendance->check_in) {
+            return redirect()->back()->with('error', 'Please check in first.');
+        }
+        if ($attendance->check_out) {
+            return redirect()->back()->with('error', 'Already checked out today.');
+        }
+        $attendance->check_out = now();
+        $attendance->check_out_location = $request->input('location', 'Office');
+        if ($attendance->check_in) {
+            $start = \Carbon\Carbon::parse($attendance->check_in);
+            $end = now();
+            $attendance->hours_worked = round($start->diffInMinutes($end) / 60, 2);
+        }
+        $attendance->save();
+        return redirect()->back()->with('success', 'Checked out successfully!');
     }
 
     public function profile()

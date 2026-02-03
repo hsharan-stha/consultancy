@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Employee;
 use App\Models\Course;
 use App\Models\TeacherCourse;
+use App\Models\TeacherDailyLog;
 use App\Models\EmployeeAttendance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -148,6 +149,56 @@ class TeacherPortalController extends Controller
 
         return redirect()->route('teacher.attendance')
             ->with('success', 'Attendance marked successfully!');
+    }
+
+    public function dailyLog(Request $request)
+    {
+        $teacher = $this->getAuthenticatedTeacher();
+        
+        if (!$teacher) {
+            return redirect()->route('home')->with('error', 'No teacher profile found.');
+        }
+
+        $month = $request->input('month', Carbon::now()->month);
+        $year = $request->input('year', Carbon::now()->year);
+
+        $logs = TeacherDailyLog::where('teacher_id', $teacher->id)
+            ->whereMonth('log_date', $month)
+            ->whereYear('log_date', $year)
+            ->with('course')
+            ->orderBy('log_date', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $courses = $teacher->courses()->wherePivotIn('status', ['active', 'assigned'])->get();
+
+        return view('teacher.daily-log', compact('teacher', 'logs', 'courses', 'month', 'year'));
+    }
+
+    public function storeDailyLog(Request $request)
+    {
+        $teacher = $this->getAuthenticatedTeacher();
+        
+        if (!$teacher) {
+            return redirect()->route('home')->with('error', 'No teacher profile found.');
+        }
+
+        $validated = $request->validate([
+            'log_date' => 'required|date',
+            'course_id' => 'nullable|exists:courses,id',
+            'hours_taught' => 'nullable|numeric|min:0|max:24',
+            'title' => 'nullable|string|max:255',
+            'description' => 'nullable|string|max:2000',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        $validated['teacher_id'] = $teacher->id;
+        $validated['hours_taught'] = $validated['hours_taught'] ?? 0;
+
+        TeacherDailyLog::create($validated);
+
+        return redirect()->route('teacher.daily-log')
+            ->with('success', 'Daily task recorded successfully!');
     }
 
     public function payments()

@@ -96,6 +96,16 @@ class CounselorPortalController extends Controller
         return view('counselor.students', compact('counselor', 'students'));
     }
 
+    public function showStudent(Student $student)
+    {
+        $counselor = $this->getAuthenticatedCounselor();
+        if (!$counselor || $student->counselor_id !== $counselor->id) {
+            abort(403, 'Unauthorized.');
+        }
+        $student->load(['applications.university', 'documents', 'tasks']);
+        return view('counselor.students-show', compact('counselor', 'student'));
+    }
+
     public function applications()
     {
         $counselor = $this->getAuthenticatedCounselor();
@@ -110,6 +120,30 @@ class CounselorPortalController extends Controller
             ->paginate(20);
 
         return view('counselor.applications', compact('counselor', 'applications'));
+    }
+
+    public function showApplication(Application $application)
+    {
+        $counselor = $this->getAuthenticatedCounselor();
+        if (!$counselor || $application->counselor_id !== $counselor->id) {
+            abort(403, 'Unauthorized.');
+        }
+        $application->load(['student', 'university']);
+        return view('counselor.applications-show', compact('counselor', 'application'));
+    }
+
+    public function updateApplicationStatus(Request $request, Application $application)
+    {
+        $counselor = $this->getAuthenticatedCounselor();
+        if (!$counselor || $application->counselor_id !== $counselor->id) {
+            abort(403, 'Unauthorized.');
+        }
+        $validated = $request->validate([
+            'status' => 'required|in:draft,submitted,under_review,accepted,rejected,enrolled,withdrawn',
+        ]);
+        $application->update($validated);
+        return redirect()->route('counselor.applications.show', $application)
+            ->with('success', 'Application status updated.');
     }
 
     public function tasks()
@@ -128,6 +162,16 @@ class CounselorPortalController extends Controller
         return view('counselor.tasks', compact('counselor', 'tasks'));
     }
 
+    public function completeTask(Task $task)
+    {
+        $counselor = $this->getAuthenticatedCounselor();
+        if (!$counselor || $task->assigned_to !== $counselor->user_id) {
+            abort(403, 'Unauthorized.');
+        }
+        $task->update(['status' => 'completed', 'completed_at' => now()]);
+        return redirect()->route('counselor.tasks')->with('success', 'Task marked as completed.');
+    }
+
     public function messages()
     {
         $counselor = $this->getAuthenticatedCounselor();
@@ -143,7 +187,35 @@ class CounselorPortalController extends Controller
         ->orderBy('created_at', 'desc')
         ->paginate(20);
 
-        return view('counselor.messages', compact('counselor', 'communications'));
+        $students = $counselor->students()->orderBy('first_name')->get();
+
+        return view('counselor.messages', compact('counselor', 'communications', 'students'));
+    }
+
+    public function sendMessage(Request $request)
+    {
+        $counselor = $this->getAuthenticatedCounselor();
+        if (!$counselor) {
+            return redirect()->route('home')->with('error', 'No counselor profile found.');
+        }
+        $validated = $request->validate([
+            'student_id' => 'required|exists:students,id',
+            'subject' => 'required|string|max:255',
+            'content' => 'required|string|max:5000',
+        ]);
+        $student = Student::findOrFail($validated['student_id']);
+        if ($student->counselor_id !== $counselor->id) {
+            abort(403, 'You can only send messages to your assigned students.');
+        }
+        Communication::create([
+            'student_id' => $student->id,
+            'user_id' => $counselor->user_id,
+            'type' => 'note',
+            'direction' => 'outgoing',
+            'subject' => $validated['subject'],
+            'content' => $validated['content'],
+        ]);
+        return redirect()->route('counselor.messages')->with('success', 'Message sent successfully.');
     }
 
     public function profile()
