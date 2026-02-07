@@ -82,6 +82,7 @@
                     <a href="{{ url('/') }}#about" class="text-slate-600 hover:text-indigo-600 font-medium transition-colors">About</a>
                     <a href="{{ url('/') }}#services" class="text-slate-600 hover:text-indigo-600 font-medium transition-colors">Services</a>
                     <a href="{{ url('/') }}#contact" class="text-slate-600 hover:text-indigo-600 font-medium transition-colors">Contact</a>
+                    <a href="{{ route('public.inquiry.form') }}" class="text-slate-600 hover:text-indigo-600 font-medium transition-colors">Submit Inquiry</a>
                     
                     <!-- Theme Switcher - Admin Only -->
                     @auth
@@ -179,6 +180,7 @@
                 <a href="{{ url('/') }}#about" class="block py-2 text-slate-600 hover:text-indigo-600 font-medium">About</a>
                 <a href="{{ url('/') }}#services" class="block py-2 text-slate-600 hover:text-indigo-600 font-medium">Services</a>
                 <a href="{{ url('/') }}#contact" class="block py-2 text-slate-600 hover:text-indigo-600 font-medium">Contact</a>
+                <a href="{{ route('public.inquiry.form') }}" class="block py-2 text-slate-600 hover:text-indigo-600 font-medium">Submit Inquiry</a>
                 
                 <!-- Mobile Theme Switcher - Admin Only -->
                 @auth
@@ -235,6 +237,7 @@
                     <a href="{{ url('/') }}#about" class="hover:text-white transition-colors">About</a>
                     <a href="{{ url('/') }}#services" class="hover:text-white transition-colors">Services</a>
                     <a href="{{ url('/') }}#contact" class="hover:text-white transition-colors">Contact</a>
+                    <a href="{{ route('public.inquiry.form') }}" class="hover:text-white transition-colors">Submit Inquiry</a>
                 </div>
             </div>
             <div class="mt-8 pt-8 border-t @if(($theme ?? 'default') === 'dark') border-slate-800 @elseif(($theme ?? 'default') === 'modern') border-purple-800 @elseif(($theme ?? 'default') === 'classic') border-blue-800 @else border-slate-700 @endif text-center text-sm @if(($theme ?? 'default') === 'dark') text-slate-500 @elseif(($theme ?? 'default') === 'modern') text-purple-300 @elseif(($theme ?? 'default') === 'classic') text-blue-300 @else text-slate-500 @endif">

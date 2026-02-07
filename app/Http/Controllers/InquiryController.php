@@ -5,8 +5,19 @@ namespace App\Http\Controllers;
 use App\Models\Inquiry;
 use App\Models\Student;
 use App\Models\Counselor;
+use App\Mail\InquiryResponseMail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
+/**
+ * Inquiry lifecycle: New → In Progress → Responded → (optional Follow-up) → Converted | Closed
+ * - Convert to Student is allowed for any status except 'converted'.
+ * - Responding does not block conversion; response is emailed to the client and logged.
+ *
+ * Role responsibilities:
+ * - Admin: Create/edit inquiries, assign counsellor, submit response (emailed to client), convert to student.
+ * - Counsellor: Assigned to inquiry for follow-up; can view assigned inquiries in Counselor portal. Response and conversion are done by Admin.
+ */
 class InquiryController extends Controller
 {
     public function index(Request $request)
@@ -84,30 +95,73 @@ class InquiryController extends Controller
             'counselor_id' => 'nullable|exists:counselors,id',
         ]);
 
-        if ($request->filled('response') && empty($inquiry->responded_at)) {
+        $responseText = $request->input('response');
+        $isNewResponse = $request->filled('response') && (string) $responseText !== (string) $inquiry->response;
+
+        if ($isNewResponse) {
             $validated['responded_at'] = now();
             $validated['responded_by'] = auth()->id();
+            // When admin submits a new response and current status is new/in_progress, set to responded
+            if (in_array($request->input('status'), ['new', 'in_progress'], true)) {
+                $validated['status'] = 'responded';
+            }
         }
 
         $inquiry->update($validated);
 
+        // Send response email to the inquiry client when a response is submitted and inquiry has email
+        if ($isNewResponse && $inquiry->email) {
+            try {
+                Mail::to($inquiry->email)->send(new InquiryResponseMail($inquiry, $responseText));
+            } catch (\Exception $e) {
+            }
+        }
+
+        $message = 'Inquiry updated successfully.';
+        if ($isNewResponse && $inquiry->email) {
+            $message .= ' A copy of your response has been sent to the client\'s email.';
+        } elseif ($isNewResponse && ! $inquiry->email) {
+            $message .= ' No email was sent (inquiry has no email address).';
+        }
+
         return redirect()->route('consultancy.inquiries.show', $inquiry)
-            ->with('success', 'Inquiry updated successfully!');
+            ->with('success', $message);
     }
 
     public function destroy(Inquiry $inquiry)
     {
         $inquiry->delete();
-        return redirect()->route('inquiries.index')
+        return redirect()->route('consultancy.inquiries.index')
             ->with('success', 'Inquiry deleted successfully!');
     }
 
     public function convertToStudent(Inquiry $inquiry)
     {
+        // Allow conversion for any non-converted status (new, in_progress, responded, follow_up, closed)
+        if ($inquiry->status === 'converted') {
+            return redirect()->route('consultancy.inquiries.show', $inquiry)
+                ->with('error', 'This inquiry has already been converted to a student.');
+        }
+
+        if (empty($inquiry->email) || ! filter_var($inquiry->email, FILTER_VALIDATE_EMAIL)) {
+            return redirect()->route('consultancy.inquiries.show', $inquiry)
+                ->with('error', 'Cannot convert: inquiry must have a valid email address. Please add or correct the email in the inquiry contact details.');
+        }
+
+        $name = trim($inquiry->name ?? '');
+        if ($name === '') {
+            return redirect()->route('consultancy.inquiries.show', $inquiry)
+                ->with('error', 'Cannot convert: inquiry must have a name. Please add the contact name.');
+        }
+
+        $parts = explode(' ', $name, 2);
+        $firstName = $parts[0] ?? $name;
+        $lastName = $parts[1] ?? '';
+
         // Create student from inquiry
         $student = Student::create([
-            'first_name' => explode(' ', $inquiry->name)[0] ?? $inquiry->name,
-            'last_name' => explode(' ', $inquiry->name)[1] ?? '',
+            'first_name' => $firstName,
+            'last_name' => $lastName,
             'email' => $inquiry->email,
             'phone' => $inquiry->phone ?? '',
             'address' => 'To be updated',

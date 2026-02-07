@@ -27,6 +27,7 @@ use App\Http\Controllers\UniversityController;
 use App\Http\Controllers\ConsultancyProfileController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\PublicInquiryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -42,6 +43,11 @@ use App\Http\Controllers\CourseController;
 
 // Public Route
 Route::get('/', [HomeController::class, 'index'])->name('home');
+
+// Public inquiry submission (no auth required)
+Route::get('/inquiry', [PublicInquiryController::class, 'showForm'])->name('public.inquiry.form');
+Route::post('/inquiry', [PublicInquiryController::class, 'submit'])->name('public.inquiry.submit');
+Route::get('/inquiry/thank-you', [PublicInquiryController::class, 'thankYou'])->name('public.inquiry.thank-you');
 
 // Admin/Editor Routes (Role: 1, 2)
 Route::middleware(['auth', 'verified', 'role:1,2'])->group(function () {

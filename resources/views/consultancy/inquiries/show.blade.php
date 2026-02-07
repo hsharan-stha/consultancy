@@ -11,8 +11,13 @@
     <div class="py-6">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             @if (session('success'))
-                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded dark:bg-green-900/30 dark:border-green-700 dark:text-green-200">
                     {{ session('success') }}
+                </div>
+            @endif
+            @if (session('error'))
+                <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded dark:bg-red-900/30 dark:border-red-700 dark:text-red-200">
+                    {{ session('error') }}
                 </div>
             @endif
 
@@ -35,6 +40,7 @@
                     @if($inquiry->status != 'converted' && $inquiry->status != 'closed')
                     <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Update Inquiry</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">When you submit a response, it is saved here and a copy is emailed to the client (if they have an email address). You can convert this inquiry to a student at any time using the button on the right.</p>
                         <form action="{{ route('consultancy.inquiries.update', $inquiry) }}" method="POST" class="space-y-4">
                             @csrf
                             @method('PUT')
@@ -49,8 +55,8 @@
                             </div>
                             
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Response</label>
-                                <textarea name="response" rows="4" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">{{ old('response', $inquiry->response) }}</textarea>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Response message (emailed to client)</label>
+                                <textarea name="response" rows="4" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white" placeholder="Type your response. It will be saved and emailed to the inquiry email address.">{{ old('response', $inquiry->response) }}</textarea>
                             </div>
                             
                             <div class="grid grid-cols-2 gap-4">

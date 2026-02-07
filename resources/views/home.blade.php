@@ -126,7 +126,12 @@
     <section id="contact" class="py-16 lg:py-24 @if(($theme ?? 'default') === 'dark') bg-slate-800 text-slate-100 @elseif(($theme ?? 'default') === 'modern') bg-gradient-to-br from-indigo-50 to-purple-50 @elseif(($theme ?? 'default') === 'classic') bg-white @else bg-white @endif">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 class="text-3xl font-bold text-slate-900 mb-4 text-center">Contact Us</h2>
-            <p class="text-slate-600 text-lg text-center max-w-2xl mx-auto mb-12">Get in touch — we’d love to hear from you</p>
+            <p class="text-slate-600 text-lg text-center max-w-2xl mx-auto mb-6">Get in touch — we’d love to hear from you</p>
+            <p class="text-center mb-12">
+                <a href="{{ route('public.inquiry.form') }}" class="inline-flex items-center px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors">
+                    Submit an Inquiry
+                </a>
+            </p>
             <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-4xl mx-auto">
                 @if($profile->email)
                 <a href="mailto:{{ $profile->email }}" class="flex flex-col items-center p-6 rounded-xl @if(($theme ?? 'default') === 'dark') bg-slate-700 hover:bg-slate-600 @elseif(($theme ?? 'default') === 'modern') bg-white hover:bg-purple-50 @elseif(($theme ?? 'default') === 'classic') bg-blue-50 hover:bg-blue-100 @else bg-slate-50 hover:bg-indigo-50 @endif transition-colors group">
