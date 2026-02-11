@@ -45,6 +45,7 @@
 
             <!-- Applications Table -->
             <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg overflow-hidden">
+                <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead class="bg-gray-50 dark:bg-gray-700">
                         <tr>
@@ -103,6 +104,7 @@
                         @endforelse
                     </tbody>
                 </table>
+                </div>
 
                 <div class="px-6 py-4">
                     {{ $applications->links() }}

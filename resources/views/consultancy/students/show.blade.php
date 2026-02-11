@@ -224,6 +224,7 @@
                             <a href="{{ route('consultancy.payments.create', ['student_id' => $student->id]) }}" class="text-blue-600 hover:text-blue-800 text-sm">+ Record Payment</a>
                         </div>
                         @if($student->payments->count())
+                            <div class="overflow-x-auto">
                             <table class="min-w-full">
                                 <thead>
                                     <tr class="text-left text-xs text-gray-500 uppercase">
@@ -251,6 +252,7 @@
                                     @endforeach
                                 </tbody>
                             </table>
+                            </div>
                         @else
                             <p class="text-gray-500 text-center py-4">No payments recorded</p>
                         @endif

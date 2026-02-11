@@ -20,6 +20,7 @@
             </div>
 
             <div class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg p-6">
+                <div class="overflow-x-auto">
                 <table class="w-full table-auto text-gray-900 dark:text-gray-100">
                     <thead>
                         <tr class="bg-gray-100 dark:bg-gray-800">
@@ -65,6 +66,7 @@
                         @endforeach
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     </div>
