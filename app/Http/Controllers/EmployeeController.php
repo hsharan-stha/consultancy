@@ -221,6 +221,38 @@ class EmployeeController extends Controller
         return view('consultancy.employees.attendance', compact('employee', 'attendances', 'monthStats'));
     }
 
+    /**
+     * Update check-out time for an attendance record from the table (e.g. when today's attendance exists and checkout needs to be set or corrected).
+     */
+    public function updateAttendanceCheckout(Request $request, Employee $employee, EmployeeAttendance $attendance)
+    {
+        if ($attendance->employee_id !== $employee->id) {
+            abort(403, 'Attendance does not belong to this employee.');
+        }
+
+        if (!$attendance->check_in) {
+            return redirect()->back()->with('error', 'Cannot set check-out without check-in. Check-in first.');
+        }
+
+        $validated = $request->validate([
+            'check_out' => 'required|date_format:H:i',
+        ]);
+
+        $date = $attendance->date->format('Y-m-d');
+        $attendance->check_out = Carbon::parse($date . ' ' . $validated['check_out']);
+        if ($attendance->check_out->lt(Carbon::parse($attendance->check_in))) {
+            return redirect()->back()->with('error', 'Check-out time must be after check-in time.');
+        }
+
+        $checkIn = Carbon::parse($attendance->check_in);
+        $checkOut = $attendance->check_out;
+        $hoursWorked = $checkIn->diffInMinutes($checkOut) / 60;
+        $attendance->hours_worked = round($hoursWorked, 2);
+        $attendance->save();
+
+        return redirect()->back()->with('success', 'Check-out updated successfully.');
+    }
+
     private function getMonthlyStats(Employee $employee, $month = null)
     {
         $month = $month ?? now();

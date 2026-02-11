@@ -94,7 +94,9 @@ class EmployeePortalController extends Controller
             'total_hours' => $attendances->where('status', 'present')->sum('hours_worked') ?? 0,
         ];
 
-        return view('employee.attendance', compact('employee', 'attendances', 'stats', 'month', 'year'));
+        $todayAttendance = $employee->attendances()->whereDate('date', Carbon::today())->first();
+
+        return view('employee.attendance', compact('employee', 'attendances', 'stats', 'month', 'year', 'todayAttendance'));
     }
 
     // One row per employee per day. Check-in creates/uses that row; check-out always updates the same row (never creates).

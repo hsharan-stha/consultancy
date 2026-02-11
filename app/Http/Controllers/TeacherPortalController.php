@@ -106,7 +106,56 @@ class TeacherPortalController extends Controller
             'total_hours' => $attendances->where('status', 'present')->sum('hours_worked') ?? 0,
         ];
 
-        return view('teacher.attendance', compact('teacher', 'attendances', 'stats', 'month', 'year'));
+        $todayAttendance = $teacher->attendances()->whereDate('date', Carbon::today())->first();
+
+        return view('teacher.attendance', compact('teacher', 'attendances', 'stats', 'month', 'year', 'todayAttendance'));
+    }
+
+    public function checkIn(Request $request)
+    {
+        $teacher = $this->getAuthenticatedTeacher();
+        if (!$teacher) {
+            return redirect()->route('home')->with('error', 'No teacher profile found.');
+        }
+        $today = Carbon::today();
+        $attendance = EmployeeAttendance::firstOrCreate(
+            ['employee_id' => $teacher->id, 'date' => $today],
+            ['status' => 'present']
+        );
+        if ($attendance->check_in) {
+            return redirect()->route('teacher.attendance')->with('error', 'Already checked in today.');
+        }
+        $attendance->check_in = now();
+        $attendance->check_in_location = $request->input('location', 'Office');
+        $attendance->status = 'present';
+        $attendance->save();
+        return redirect()->route('teacher.attendance')->with('success', 'Checked in successfully!');
+    }
+
+    public function checkOut(Request $request)
+    {
+        $teacher = $this->getAuthenticatedTeacher();
+        if (!$teacher) {
+            return redirect()->route('home')->with('error', 'No teacher profile found.');
+        }
+        $today = Carbon::today();
+        $attendance = $teacher->attendances()
+            ->whereDate('date', $today)
+            ->whereNotNull('check_in')
+            ->first();
+        if (!$attendance) {
+            return redirect()->route('teacher.attendance')->with('error', 'Please check in first.');
+        }
+        if ($attendance->check_out) {
+            return redirect()->route('teacher.attendance')->with('error', 'Already checked out today.');
+        }
+        $attendance->check_out = now();
+        $attendance->check_out_location = $request->input('location', 'Office');
+        $checkIn = Carbon::parse($attendance->check_in);
+        $checkOut = Carbon::parse($attendance->check_out);
+        $attendance->hours_worked = round($checkIn->diffInMinutes($checkOut) / 60, 2);
+        $attendance->save();
+        return redirect()->route('teacher.attendance')->with('success', 'Checked out successfully!');
     }
 
     public function markAttendance(Request $request)

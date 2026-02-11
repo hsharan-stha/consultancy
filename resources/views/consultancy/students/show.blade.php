@@ -127,9 +127,46 @@
                             </div>
                         @endif
 
-                        @if($student->courses->count())
+                        @php
+                            $pendingCourses = $student->courses->where('pivot.status', 'pending_verification');
+                            $enrolledCourses = $student->courses->where('pivot.status', 'enrolled');
+                        @endphp
+
+                        @if($pendingCourses->count() > 0)
+                            <div class="mb-4 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-700">
+                                <h4 class="text-sm font-medium text-amber-800 dark:text-amber-200 mb-2">Pending verification (student requested from portal)</h4>
+                                <p class="text-xs text-amber-700 dark:text-amber-300 mb-3">Approve only after payment is done.</p>
+                                <div class="space-y-3">
+                                    @foreach($pendingCourses as $course)
+                                    <div class="flex flex-wrap justify-between items-start gap-3 p-3 bg-white dark:bg-gray-800 rounded border border-amber-200 dark:border-amber-700">
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ $course->course_code }}</p>
+                                            <p class="font-medium text-gray-900 dark:text-white">{{ $course->course_name }}</p>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Requested: {{ $course->pivot->enrolled_at ? \Carbon\Carbon::parse($course->pivot->enrolled_at)->format('M d, Y') : '—' }}</p>
+                                        </div>
+                                        <div class="flex items-center gap-2 shrink-0">
+                                            @if(isset($hasCompletedPayment) && $hasCompletedPayment)
+                                                <form action="{{ route('consultancy.students.approve-course-enrollment', [$student, $course]) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    <button type="submit" class="px-3 py-1.5 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg">Approve enrollment</button>
+                                                </form>
+                                            @else
+                                                <span class="text-xs text-amber-700 dark:text-amber-300 px-2 py-1 bg-amber-100 dark:bg-amber-800/50 rounded">Complete a payment to enable Approve</span>
+                                            @endif
+                                            <form action="{{ route('consultancy.students.reject-course-enrollment', [$student, $course]) }}" method="POST" class="inline" onsubmit="return confirm('Reject this enrollment request?');">
+                                                @csrf
+                                                <button type="submit" class="px-3 py-1.5 text-sm font-medium text-red-700 bg-red-100 hover:bg-red-200 rounded-lg dark:bg-red-900/30 dark:text-red-200">Reject</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+
+                        @if($enrolledCourses->count() > 0)
                             <div class="space-y-3">
-                                @foreach($student->courses as $course)
+                                @foreach($enrolledCourses as $course)
                                 <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
                                     <div class="flex justify-between items-start gap-3">
                                         <div class="flex-1 min-w-0">
@@ -156,7 +193,9 @@
                                 </div>
                                 @endforeach
                             </div>
-                        @else
+                        @endif
+
+                        @if($pendingCourses->count() === 0 && $enrolledCourses->count() === 0)
                             <p class="text-gray-500 dark:text-gray-400 text-center py-4">Not enrolled in any courses yet</p>
                         @endif
                     </div>

@@ -142,15 +142,19 @@ class StudentController extends Controller
             'counselor.user', 'targetUniversity', 'documents',
             'applications.university', 'visaApplications', 'payments',
             'tasks', 'communications.user', 'inquiries',
-            'courses' => fn ($q) => $q->wherePivot('status', 'enrolled')->orderByPivot('enrolled_at', 'desc'),
+            'courses',
         ]);
-        $enrolledCourseIds = $student->courses->pluck('id')->toArray();
+        $enrolledOrPendingCourseIds = $student->courses()
+            ->wherePivotIn('status', ['enrolled', 'pending_verification'])
+            ->pluck('courses.id')
+            ->toArray();
         $availableCoursesForEnrollment = Course::where('status', 'active')
-            ->whereNotIn('id', $enrolledCourseIds)
+            ->whereNotIn('id', $enrolledOrPendingCourseIds)
             ->orderBy('course_name')
             ->get()
             ->filter(fn ($c) => $c->hasCapacity());
-        return view('consultancy.students.show', compact('student', 'availableCoursesForEnrollment'));
+        $hasCompletedPayment = $student->payments()->where('status', 'completed')->exists();
+        return view('consultancy.students.show', compact('student', 'availableCoursesForEnrollment', 'hasCompletedPayment'));
     }
 
     public function edit(Student $student)
@@ -287,6 +291,47 @@ class StudentController extends Controller
 
         return redirect()->route('consultancy.students.show', $student)
             ->with('success', 'Student enrolled in ' . $course->course_name . ' successfully!');
+    }
+
+    public function approveCourseEnrollment(Student $student, Course $course)
+    {
+        $pivot = $student->courses()->where('course_id', $course->id)->first();
+        if (!$pivot || $pivot->pivot->status !== 'pending_verification') {
+            return redirect()->route('consultancy.students.show', $student)
+                ->with('error', 'No pending enrollment request found for this course.');
+        }
+
+        if (!$student->payments()->where('status', 'completed')->exists()) {
+            return redirect()->route('consultancy.students.show', $student)
+                ->with('error', 'Cannot approve enrollment until the student has at least one completed payment.');
+        }
+
+        if (!$course->hasCapacity()) {
+            return redirect()->route('consultancy.students.show', $student)
+                ->with('error', 'Course is full. Cannot approve enrollment.');
+        }
+
+        $student->courses()->updateExistingPivot($course->id, [
+            'status' => 'enrolled',
+            'enrolled_at' => now(),
+        ]);
+
+        return redirect()->route('consultancy.students.show', $student)
+            ->with('success', 'Enrollment approved. Student is now enrolled in ' . $course->course_name . '.');
+    }
+
+    public function rejectCourseEnrollment(Student $student, Course $course)
+    {
+        $pivot = $student->courses()->where('course_id', $course->id)->first();
+        if (!$pivot || $pivot->pivot->status !== 'pending_verification') {
+            return redirect()->route('consultancy.students.show', $student)
+                ->with('error', 'No pending enrollment request found for this course.');
+        }
+
+        $student->courses()->updateExistingPivot($course->id, ['status' => 'withdrawn']);
+
+        return redirect()->route('consultancy.students.show', $student)
+            ->with('success', 'Enrollment request for ' . $course->course_name . ' has been rejected.');
     }
 
     public function destroy(Student $student)

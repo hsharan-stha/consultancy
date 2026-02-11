@@ -13,6 +13,7 @@ use App\Models\Course;
 use App\Models\ConsultancyProfile;
 use App\Mail\DocumentUploadedByStudentMail;
 use App\Mail\DocumentReceivedMail;
+use App\Mail\CommunicationSentConsultancyMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -225,13 +226,23 @@ class StudentPortalController extends Controller
             'content' => 'required|string',
         ]);
 
-        Communication::create([
+        $communication = Communication::create([
             'student_id' => $student->id,
             'type' => 'note',
             'direction' => 'incoming',
             'subject' => $validated['subject'],
             'content' => $validated['content'],
         ]);
+
+        // Notify consultancy when a student sends a message from the portal
+        $profile = ConsultancyProfile::where('is_active', true)->first();
+        if ($profile && $profile->email) {
+            try {
+                Mail::to($profile->email)->send(new CommunicationSentConsultancyMail($communication));
+            } catch (\Exception $e) {
+                // Fail silently to avoid breaking the student portal if mail fails
+            }
+        }
 
         return redirect()->route('portal.messages')
             ->with('success', 'Message sent successfully!');
@@ -244,19 +255,28 @@ class StudentPortalController extends Controller
             return redirect()->route('home')->with('error', 'No student profile found.');
         }
 
-        $enrolledCourseIds = $student->enrolledCourses()->pluck('courses.id')->toArray();
+        $enrolledOrPendingCourseIds = $student->courses()
+            ->wherePivotIn('status', ['enrolled', 'pending_verification'])
+            ->pluck('courses.id')
+            ->toArray();
 
         $availableCourses = Course::where('status', 'active')
-            ->whereNotIn('id', $enrolledCourseIds)
+            ->whereNotIn('id', $enrolledOrPendingCourseIds)
             ->orderBy('course_name')
-            ->get();
+            ->get()
+            ->filter(fn ($c) => $c->hasCapacity());
 
         $myEnrollments = $student->courses()
             ->wherePivot('status', 'enrolled')
             ->orderByPivot('enrolled_at', 'desc')
             ->get();
 
-        return view('portal.courses', compact('student', 'availableCourses', 'myEnrollments'));
+        $pendingEnrollments = $student->courses()
+            ->wherePivot('status', 'pending_verification')
+            ->orderByPivot('enrolled_at', 'desc')
+            ->get();
+
+        return view('portal.courses', compact('student', 'availableCourses', 'myEnrollments', 'pendingEnrollments'));
     }
 
     public function enroll(Course $course)
@@ -271,9 +291,9 @@ class StudentPortalController extends Controller
                 ->with('error', 'This course is not open for enrollment.');
         }
 
-        if ($student->courses()->where('course_id', $course->id)->wherePivot('status', 'enrolled')->exists()) {
+        if ($student->courses()->where('course_id', $course->id)->wherePivotIn('status', ['enrolled', 'pending_verification'])->exists()) {
             return redirect()->route('portal.courses')
-                ->with('error', 'You are already enrolled in this course.');
+                ->with('error', 'You are already enrolled or have a pending request for this course.');
         }
 
         if (!$course->hasCapacity()) {
@@ -282,12 +302,12 @@ class StudentPortalController extends Controller
         }
 
         $student->courses()->attach($course->id, [
-            'status' => 'enrolled',
+            'status' => 'pending_verification',
             'enrolled_at' => now(),
         ]);
 
         return redirect()->route('portal.courses')
-            ->with('success', 'You have successfully enrolled in ' . $course->course_name . '!');
+            ->with('success', 'Enrollment request submitted for ' . $course->course_name . '. Admin will verify and approve after payment.');
     }
 
     public function withdraw(Course $course)
@@ -307,6 +327,25 @@ class StudentPortalController extends Controller
 
         return redirect()->route('portal.courses')
             ->with('success', 'You have withdrawn from ' . $course->course_name . '.');
+    }
+
+    public function cancelEnrollmentRequest(Course $course)
+    {
+        $student = $this->getAuthenticatedStudent();
+        if (!$student) {
+            return redirect()->route('home')->with('error', 'No student profile found.');
+        }
+
+        $enrollment = $student->courses()->where('course_id', $course->id)->wherePivot('status', 'pending_verification')->first();
+        if (!$enrollment) {
+            return redirect()->route('portal.courses')
+                ->with('error', 'No pending enrollment request for this course.');
+        }
+
+        $student->courses()->updateExistingPivot($course->id, ['status' => 'withdrawn']);
+
+        return redirect()->route('portal.courses')
+            ->with('success', 'Enrollment request for ' . $course->course_name . ' has been cancelled.');
     }
 
     private function getAuthenticatedStudent()

@@ -18,31 +18,26 @@
                 </div>
             @endif
             <!-- Check-in / Check-out -->
-            <div class="mb-6 bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
+            <div class="mb-6 bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6 border-l-4 border-indigo-500">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Today's Attendance</h3>
-                @if(isset($todayAttendance))
-                    @if($todayAttendance->check_in)
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Checked in: {{ \Carbon\Carbon::parse($todayAttendance->check_in)->format('h:i A') }}</p>
+                <div class="flex flex-wrap items-center gap-4">
+                    @if(isset($todayAttendance) && $todayAttendance->check_in)
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Checked in: <strong class="text-gray-900 dark:text-white">{{ \Carbon\Carbon::parse($todayAttendance->check_in)->format('h:i A') }}</strong></p>
                         @if(!$todayAttendance->check_out)
-                        <form method="POST" action="{{ route('employee.check-out') }}" class="inline">
-                            @csrf
-                            <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg">Check Out</button>
-                        </form>
+                            <form method="POST" action="{{ route('employee.check-out') }}" class="inline">
+                                @csrf
+                                <button type="submit" class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow-sm">Check Out</button>
+                            </form>
                         @else
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Checked out: {{ \Carbon\Carbon::parse($todayAttendance->check_out)->format('h:i A') }}</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Checked out: <strong class="text-gray-900 dark:text-white">{{ \Carbon\Carbon::parse($todayAttendance->check_out)->format('h:i A') }}</strong></p>
                         @endif
                     @else
-                    <form method="POST" action="{{ route('employee.check-in') }}" class="inline">
-                        @csrf
-                        <button type="submit" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg">Check In</button>
-                    </form>
+                        <form method="POST" action="{{ route('employee.check-in') }}" class="inline">
+                            @csrf
+                            <button type="submit" class="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-sm">Check In</button>
+                        </form>
                     @endif
-                @else
-                <form method="POST" action="{{ route('employee.check-in') }}" class="inline">
-                    @csrf
-                    <button type="submit" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg">Check In</button>
-                </form>
-                @endif
+                </div>
             </div>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Main Content -->

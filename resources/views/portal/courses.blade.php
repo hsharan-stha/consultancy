@@ -23,6 +23,36 @@
                 </div>
             @endif
 
+            <!-- Pending approval (student requested; admin will verify after payment) -->
+            @if(isset($pendingEnrollments) && $pendingEnrollments->count() > 0)
+            <div class="mb-8">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Pending approval</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">These enrollment requests will be verified by admin. You will be enrolled after payment is confirmed.</p>
+                <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    @foreach($pendingEnrollments as $course)
+                        <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 shadow-sm sm:rounded-lg p-6">
+                            <div class="flex justify-between items-start gap-2">
+                                <div>
+                                    <p class="text-sm font-medium text-amber-700 dark:text-amber-300">Pending verification</p>
+                                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mt-1">{{ $course->course_code }}</p>
+                                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white mt-1">{{ $course->course_name }}</h4>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                                        Requested: {{ $course->pivot->enrolled_at ? \Carbon\Carbon::parse($course->pivot->enrolled_at)->format('M d, Y') : '—' }}
+                                    </p>
+                                </div>
+                                <form method="POST" action="{{ route('portal.courses.cancel-request', $course) }}" class="shrink-0" onsubmit="return confirm('Cancel this enrollment request?');">
+                                    @csrf
+                                    <button type="submit" class="px-3 py-1.5 text-sm font-medium text-amber-800 bg-amber-200 hover:bg-amber-300 rounded-lg dark:bg-amber-800/50 dark:text-amber-200">
+                                        Cancel request
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
             <!-- My Enrolled Courses -->
             <div class="mb-8">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">My Enrolled Courses</h3>

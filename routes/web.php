@@ -81,6 +81,8 @@ Route::middleware(['auth', 'verified', 'role:1,2'])->prefix('consultancy')->name
     // Students Management
     Route::resource('students', StudentController::class);
     Route::post('students/{student}/courses', [StudentController::class, 'enrollCourse'])->name('students.enroll-course');
+    Route::post('students/{student}/courses/{course}/approve', [StudentController::class, 'approveCourseEnrollment'])->name('students.approve-course-enrollment');
+    Route::post('students/{student}/courses/{course}/reject', [StudentController::class, 'rejectCourseEnrollment'])->name('students.reject-course-enrollment');
     
     // Inquiries Management
     Route::resource('inquiries', InquiryController::class);
@@ -134,6 +136,7 @@ Route::middleware(['auth', 'verified', 'role:1,2'])->prefix('consultancy')->name
     Route::post('employees/{employee}/check-in', [EmployeeController::class, 'checkIn'])->name('employees.check-in');
     Route::post('employees/{employee}/check-out', [EmployeeController::class, 'checkOut'])->name('employees.check-out');
     Route::get('employees/{employee}/attendance', [EmployeeController::class, 'attendance'])->name('employees.attendance');
+    Route::put('employees/{employee}/attendance/{attendance}/checkout', [EmployeeController::class, 'updateAttendanceCheckout'])->name('employees.attendance.update-checkout');
 });
 
 // Student Portal Routes (Role: 4 - Student)
@@ -150,6 +153,7 @@ Route::middleware(['auth', 'verified'])->prefix('portal')->name('portal.')->grou
     Route::get('/courses', [StudentPortalController::class, 'courses'])->name('courses');
     Route::post('/courses/{course}/enroll', [StudentPortalController::class, 'enroll'])->name('courses.enroll');
     Route::post('/courses/{course}/withdraw', [StudentPortalController::class, 'withdraw'])->name('courses.withdraw');
+    Route::post('/courses/{course}/cancel-request', [StudentPortalController::class, 'cancelEnrollmentRequest'])->name('courses.cancel-request');
     Route::get('/messages', [StudentPortalController::class, 'messages'])->name('messages');
     Route::post('/messages', [StudentPortalController::class, 'sendMessage'])->name('messages.send');
 });
@@ -183,6 +187,8 @@ Route::middleware(['auth', 'verified', 'role:6'])->prefix('teacher')->name('teac
     Route::get('/courses', [TeacherPortalController::class, 'courses'])->name('courses');
     Route::get('/attendance', [TeacherPortalController::class, 'attendance'])->name('attendance');
     Route::post('/attendance', [TeacherPortalController::class, 'markAttendance'])->name('attendance.mark');
+    Route::post('/check-in', [TeacherPortalController::class, 'checkIn'])->name('check-in');
+    Route::post('/check-out', [TeacherPortalController::class, 'checkOut'])->name('check-out');
     Route::get('/daily-log', [TeacherPortalController::class, 'dailyLog'])->name('daily-log');
     Route::post('/daily-log', [TeacherPortalController::class, 'storeDailyLog'])->name('daily-log.store');
     Route::get('/payments', [TeacherPortalController::class, 'payments'])->name('payments');

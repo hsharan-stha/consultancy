@@ -13,7 +13,7 @@
 </head>
 <body>
     <div class="header">
-        <p>A communication has been sent to a student.</p>
+        <p>A communication has been recorded.</p>
     </div>
 
     <div class="box">
