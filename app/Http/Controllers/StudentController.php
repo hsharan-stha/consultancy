@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Role;
 use App\Models\Course;
 use App\Mail\StatusUpdateMail;
+use App\Mail\StudentCreatedMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -118,6 +119,13 @@ class StudentController extends Controller
         $validated['user_id'] = $user->id;
 
         $student = Student::create($validated);
+
+        if ($student->email) {
+            try {
+                Mail::to($student->email)->send(new StudentCreatedMail($student));
+            } catch (\Exception $e) {
+            }
+        }
 
         $message = 'Student registered successfully! ID: ' . $student->student_id;
         if (!$request->filled('password')) {

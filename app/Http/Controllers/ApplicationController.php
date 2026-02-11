@@ -6,7 +6,9 @@ use App\Models\Application;
 use App\Models\Student;
 use App\Models\University;
 use App\Models\Counselor;
-use App\Mail\StatusUpdateMail;
+use App\Mail\ApplicationCreatedMail;
+use App\Mail\ApplicationUpdatedMail;
+use App\Mail\COEAppliedMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
@@ -73,6 +75,13 @@ class ApplicationController extends Controller
         $student = Student::find($validated['student_id']);
         $student->update(['status' => 'applied']);
 
+        if ($student && $student->email) {
+            try {
+                Mail::to($student->email)->send(new ApplicationCreatedMail($application));
+            } catch (\Exception $e) {
+            }
+        }
+
         return redirect()->route('consultancy.applications.show', $application)
             ->with('success', 'Application created successfully! ID: ' . $application->application_id);
     }
@@ -119,19 +128,23 @@ class ApplicationController extends Controller
         ]);
 
         $oldStatus = $application->status;
+        $oldCoeStatus = $application->coe_status;
+        $oldCoeAppliedDate = $application->coe_applied_date;
         $application->update($validated);
+        $application->load('student');
 
-        if ($oldStatus !== $validated['status']) {
-            $application->load('student');
-            if ($application->student && $application->student->email) {
+        if ($application->student && $application->student->email) {
+            try {
+                Mail::to($application->student->email)->send(new ApplicationUpdatedMail($application));
+            } catch (\Exception $e) {
+            }
+            $coeStatusNow = $validated['coe_status'] ?? null;
+            $coeAppliedDateNow = isset($validated['coe_applied_date']) ? $validated['coe_applied_date'] : null;
+            $coeJustApplied = ($coeStatusNow && in_array(strtolower($coeStatusNow), ['applied', 'processing'], true) && $oldCoeStatus !== $coeStatusNow)
+                || ($coeAppliedDateNow && !$oldCoeAppliedDate);
+            if ($coeJustApplied) {
                 try {
-                    Mail::to($application->student->email)->send(new StatusUpdateMail(
-                        $application->student->full_name,
-                        'application',
-                        $application->application_id,
-                        $oldStatus,
-                        $validated['status']
-                    ));
+                    Mail::to($application->student->email)->send(new COEAppliedMail($application));
                 } catch (\Exception $e) {
                 }
             }

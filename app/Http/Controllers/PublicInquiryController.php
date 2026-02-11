@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Inquiry;
 use App\Models\ConsultancyProfile;
+use App\Mail\NewInquiryNotificationMail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 /**
  * Public inquiry submission (website visitors).
@@ -41,7 +43,15 @@ class PublicInquiryController extends Controller
         $validated['status'] = 'new';
         $validated['source'] = $validated['source'] ?? 'Website';
 
-        Inquiry::create($validated);
+        $inquiry = Inquiry::create($validated);
+
+        $profile = ConsultancyProfile::where('is_active', true)->first();
+        if ($profile && $profile->email) {
+            try {
+                Mail::to($profile->email)->send(new NewInquiryNotificationMail($inquiry));
+            } catch (\Exception $e) {
+            }
+        }
 
         return redirect()->route('public.inquiry.thank-you')
             ->with('success', 'Thank you! Your inquiry has been submitted. We will get back to you soon.');

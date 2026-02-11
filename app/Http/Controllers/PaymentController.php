@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Payment;
 use App\Models\Student;
 use App\Models\Application;
+use App\Mail\PaymentDoneMail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class PaymentController extends Controller
 {
@@ -81,6 +83,16 @@ class PaymentController extends Controller
 
         $payment = Payment::create($validated);
 
+        if ($validated['paid_amount'] > 0) {
+            $payment->load('student');
+            if ($payment->student && $payment->student->email) {
+                try {
+                    Mail::to($payment->student->email)->send(new PaymentDoneMail($payment));
+                } catch (\Exception $e) {
+                }
+            }
+        }
+
         return redirect()->route('consultancy.payments.show', $payment)
             ->with('success', 'Payment created successfully! ID: ' . $payment->payment_id);
     }
@@ -143,6 +155,14 @@ class PaymentController extends Controller
         }
 
         $payment->save();
+
+        $payment->load('student');
+        if ($payment->student && $payment->student->email) {
+            try {
+                Mail::to($payment->student->email)->send(new PaymentDoneMail($payment));
+            } catch (\Exception $e) {
+            }
+        }
 
         return redirect()->route('consultancy.payments.show', $payment)
             ->with('success', 'Payment recorded successfully!');

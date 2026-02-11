@@ -151,17 +151,19 @@ class EmployeeController extends Controller
             ->with('success', 'Employee deleted successfully!');
     }
 
-    // Check-in/Check-out methods
+    // Check-in/Check-out: one row per employee per day. Check-in creates/uses that row; check-out always updates the same row (never creates).
     public function checkIn(Request $request, Employee $employee)
     {
         $today = today();
-        $existing = $employee->attendances()->whereDate('date', $today)->first();
+        $attendance = EmployeeAttendance::firstOrCreate(
+            ['employee_id' => $employee->id, 'date' => $today],
+            ['status' => 'present']
+        );
 
-        if ($existing && $existing->check_in) {
+        if ($attendance->check_in) {
             return redirect()->back()->with('error', 'Already checked in today!');
         }
 
-        $attendance = $existing ?? new EmployeeAttendance(['employee_id' => $employee->id, 'date' => $today]);
         $attendance->check_in = now();
         $attendance->check_in_location = $request->input('location', 'Office');
         $attendance->status = 'present';
@@ -173,9 +175,13 @@ class EmployeeController extends Controller
     public function checkOut(Request $request, Employee $employee)
     {
         $today = today();
-        $attendance = $employee->attendances()->whereDate('date', $today)->first();
+        // Always update the same row as morning check-in (never create a new row for checkout)
+        $attendance = $employee->attendances()
+            ->whereDate('date', $today)
+            ->whereNotNull('check_in')
+            ->first();
 
-        if (!$attendance || !$attendance->check_in) {
+        if (!$attendance) {
             return redirect()->back()->with('error', 'Please check in first!');
         }
 
@@ -185,13 +191,12 @@ class EmployeeController extends Controller
 
         $attendance->check_out = now();
         $attendance->check_out_location = $request->input('location', 'Office');
-        
-        // Calculate hours worked
+
         $checkIn = Carbon::parse($attendance->check_in);
         $checkOut = Carbon::parse($attendance->check_out);
         $hoursWorked = $checkIn->diffInHours($checkOut) + ($checkIn->diffInMinutes($checkOut) % 60) / 60;
         $attendance->hours_worked = round($hoursWorked, 2);
-        
+
         $attendance->save();
 
         return redirect()->back()->with('success', 'Checked out successfully!');

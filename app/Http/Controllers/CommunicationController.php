@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Communication;
 use App\Models\Student;
+use App\Mail\CommunicationToStudentMail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class CommunicationController extends Controller
 {
@@ -70,7 +72,18 @@ class CommunicationController extends Controller
 
         $validated['user_id'] = auth()->id();
 
-        Communication::create($validated);
+        $communication = Communication::create($validated);
+
+        if ($validated['type'] === 'email' && $validated['direction'] === 'outgoing') {
+            $student = Student::find($validated['student_id']);
+            $toEmail = $validated['email_to'] ?? ($student->email ?? null);
+            if ($toEmail) {
+                try {
+                    Mail::to($toEmail)->send(new CommunicationToStudentMail($communication));
+                } catch (\Exception $e) {
+                }
+            }
+        }
 
         return redirect()->route('consultancy.students.show', $validated['student_id'])
             ->with('success', 'Communication logged successfully!');

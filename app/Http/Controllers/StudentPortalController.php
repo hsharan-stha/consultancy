@@ -9,8 +9,11 @@ use App\Models\Application;
 use App\Models\Payment;
 use App\Models\Communication;
 use App\Models\Course;
+use App\Models\ConsultancyProfile;
+use App\Mail\DocumentUploadedByStudentMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class StudentPortalController extends Controller
 {
@@ -109,7 +112,7 @@ class StudentPortalController extends Controller
         }
         $file->move($docPath, $fileName);
 
-        Document::create([
+        $document = Document::create([
             'student_id' => $student->id,
             'document_type' => $validated['document_type'],
             'title' => $validated['title'],
@@ -119,6 +122,14 @@ class StudentPortalController extends Controller
             'file_size' => $fileSizeKb,
             'status' => 'pending',
         ]);
+
+        $profile = ConsultancyProfile::where('is_active', true)->first();
+        if ($profile && $profile->email) {
+            try {
+                Mail::to($profile->email)->send(new DocumentUploadedByStudentMail($document));
+            } catch (\Exception $e) {
+            }
+        }
 
         return redirect()->route('portal.documents')
             ->with('success', 'Document uploaded successfully! It will be reviewed shortly.');

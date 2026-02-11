@@ -97,6 +97,7 @@ class EmployeePortalController extends Controller
         return view('employee.attendance', compact('employee', 'attendances', 'stats', 'month', 'year'));
     }
 
+    // One row per employee per day. Check-in creates/uses that row; check-out always updates the same row (never creates).
     public function checkIn(Request $request)
     {
         $employee = $this->getAuthenticatedEmployee();
@@ -104,15 +105,13 @@ class EmployeePortalController extends Controller
             return redirect()->route('home')->with('error', 'No employee profile found.');
         }
         $today = Carbon::today();
-        $existing = $employee->attendances()->whereDate('date', $today)->first();
-        if ($existing && $existing->check_in) {
+        $attendance = EmployeeAttendance::firstOrCreate(
+            ['employee_id' => $employee->id, 'date' => $today],
+            ['status' => 'present']
+        );
+        if ($attendance->check_in) {
             return redirect()->back()->with('error', 'Already checked in today.');
         }
-        $attendance = $existing ?? EmployeeAttendance::create([
-            'employee_id' => $employee->id,
-            'date' => $today,
-            'status' => 'present',
-        ]);
         $attendance->check_in = now();
         $attendance->check_in_location = $request->input('location', 'Office');
         $attendance->status = 'present';
@@ -127,8 +126,12 @@ class EmployeePortalController extends Controller
             return redirect()->route('home')->with('error', 'No employee profile found.');
         }
         $today = Carbon::today();
-        $attendance = $employee->attendances()->whereDate('date', $today)->first();
-        if (!$attendance || !$attendance->check_in) {
+        // Always update the same row as morning check-in (never create a new row for checkout)
+        $attendance = $employee->attendances()
+            ->whereDate('date', $today)
+            ->whereNotNull('check_in')
+            ->first();
+        if (!$attendance) {
             return redirect()->back()->with('error', 'Please check in first.');
         }
         if ($attendance->check_out) {
@@ -136,11 +139,9 @@ class EmployeePortalController extends Controller
         }
         $attendance->check_out = now();
         $attendance->check_out_location = $request->input('location', 'Office');
-        if ($attendance->check_in) {
-            $start = \Carbon\Carbon::parse($attendance->check_in);
-            $end = now();
-            $attendance->hours_worked = round($start->diffInMinutes($end) / 60, 2);
-        }
+        $start = Carbon::parse($attendance->check_in);
+        $end = now();
+        $attendance->hours_worked = round($start->diffInMinutes($end) / 60, 2);
         $attendance->save();
         return redirect()->back()->with('success', 'Checked out successfully!');
     }

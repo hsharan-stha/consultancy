@@ -6,7 +6,8 @@ use App\Models\VisaApplication;
 use App\Models\Student;
 use App\Models\Application;
 use App\Models\Counselor;
-use App\Mail\StatusUpdateMail;
+use App\Mail\VisaCreatedMail;
+use App\Mail\VisaUpdatedMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
@@ -64,6 +65,13 @@ class VisaApplicationController extends Controller
         $student = Student::find($validated['student_id']);
         $student->update(['status' => 'visa_processing']);
 
+        if ($student && $student->email) {
+            try {
+                Mail::to($student->email)->send(new VisaCreatedMail($visaApplication));
+            } catch (\Exception $e) {
+            }
+        }
+
         return redirect()->route('consultancy.visa.show', $visaApplication)
             ->with('success', 'Visa application created successfully! ID: ' . $visaApplication->visa_application_id);
     }
@@ -103,7 +111,6 @@ class VisaApplicationController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        $oldStatus = $visa->status;
         $visa->update($validated);
 
         // Update student status based on visa status
@@ -116,15 +123,9 @@ class VisaApplicationController extends Controller
             $student->update(['status' => 'departed']);
         }
 
-        if ($oldStatus !== $validated['status'] && $student && $student->email) {
+        if ($student && $student->email) {
             try {
-                Mail::to($student->email)->send(new StatusUpdateMail(
-                    $student->full_name,
-                    'visa application',
-                    $visa->visa_application_id ?? ('Visa #' . $visa->id),
-                    $oldStatus,
-                    $validated['status']
-                ));
+                Mail::to($student->email)->send(new VisaUpdatedMail($visa));
             } catch (\Exception $e) {
             }
         }

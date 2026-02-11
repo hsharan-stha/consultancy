@@ -6,7 +6,10 @@ use App\Models\Task;
 use App\Models\Student;
 use App\Models\Application;
 use App\Models\User;
+use App\Mail\TaskCreatedForStudentMail;
+use App\Mail\TaskAssignedMail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class TaskController extends Controller
 {
@@ -74,6 +77,21 @@ class TaskController extends Controller
         $validated['status'] = 'pending';
 
         $task = Task::create($validated);
+        $task->load(['student', 'assignedTo', 'assignedBy']);
+
+        if ($task->student && $task->student->email) {
+            try {
+                Mail::to($task->student->email)->send(new TaskCreatedForStudentMail($task));
+            } catch (\Exception $e) {
+            }
+        }
+
+        if ($task->assigned_to && $task->assignedTo && $task->assignedTo->email) {
+            try {
+                Mail::to($task->assignedTo->email)->send(new TaskAssignedMail($task));
+            } catch (\Exception $e) {
+            }
+        }
 
         return redirect()->route('consultancy.tasks.show', $task)
             ->with('success', 'Task created successfully!');
