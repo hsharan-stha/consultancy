@@ -7,8 +7,11 @@ use App\Models\University;
 use App\Models\Counselor;
 use App\Models\User;
 use App\Models\Role;
+use App\Models\Course;
+use App\Mail\StatusUpdateMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 
 class StudentController extends Controller
 {
@@ -119,7 +122,13 @@ class StudentController extends Controller
             'tasks', 'communications.user', 'inquiries',
             'courses' => fn ($q) => $q->wherePivot('status', 'enrolled')->orderByPivot('enrolled_at', 'desc'),
         ]);
-        return view('consultancy.students.show', compact('student'));
+        $enrolledCourseIds = $student->courses->pluck('id')->toArray();
+        $availableCoursesForEnrollment = Course::where('status', 'active')
+            ->whereNotIn('id', $enrolledCourseIds)
+            ->orderBy('course_name')
+            ->get()
+            ->filter(fn ($c) => $c->hasCapacity());
+        return view('consultancy.students.show', compact('student', 'availableCoursesForEnrollment'));
     }
 
     public function edit(Student $student)
@@ -192,10 +201,56 @@ class StudentController extends Controller
             }
         }
 
+        $oldStatus = $student->status;
         $student->update($validated);
+
+        if ($oldStatus !== $validated['status'] && $student->email) {
+            try {
+                Mail::to($student->email)->send(new StatusUpdateMail(
+                    $student->full_name,
+                    'student',
+                    $student->student_id,
+                    $oldStatus,
+                    $validated['status']
+                ));
+            } catch (\Exception $e) {
+            }
+        }
 
         return redirect()->route('consultancy.students.show', $student)
             ->with('success', 'Student updated successfully!');
+    }
+
+    public function enrollCourse(Request $request, Student $student)
+    {
+        $validated = $request->validate([
+            'course_id' => 'required|exists:courses,id',
+        ]);
+
+        $course = Course::findOrFail($validated['course_id']);
+
+        if ($course->status !== 'active') {
+            return redirect()->route('consultancy.students.show', $student)
+                ->with('error', 'That course is not open for enrollment.');
+        }
+
+        if ($student->courses()->where('course_id', $course->id)->wherePivot('status', 'enrolled')->exists()) {
+            return redirect()->route('consultancy.students.show', $student)
+                ->with('error', 'Student is already enrolled in that course.');
+        }
+
+        if (!$course->hasCapacity()) {
+            return redirect()->route('consultancy.students.show', $student)
+                ->with('error', 'That course is full. No more enrollments.');
+        }
+
+        $student->courses()->attach($course->id, [
+            'status' => 'enrolled',
+            'enrolled_at' => now(),
+        ]);
+
+        return redirect()->route('consultancy.students.show', $student)
+            ->with('success', 'Student enrolled in ' . $course->course_name . ' successfully!');
     }
 
     public function destroy(Student $student)

@@ -80,6 +80,7 @@ Route::middleware(['auth', 'verified', 'role:1,2'])->prefix('consultancy')->name
     
     // Students Management
     Route::resource('students', StudentController::class);
+    Route::post('students/{student}/courses', [StudentController::class, 'enrollCourse'])->name('students.enroll-course');
     
     // Inquiries Management
     Route::resource('inquiries', InquiryController::class);

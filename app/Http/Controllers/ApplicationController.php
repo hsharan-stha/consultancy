@@ -6,7 +6,9 @@ use App\Models\Application;
 use App\Models\Student;
 use App\Models\University;
 use App\Models\Counselor;
+use App\Mail\StatusUpdateMail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class ApplicationController extends Controller
 {
@@ -116,7 +118,24 @@ class ApplicationController extends Controller
             'notes' => 'nullable|string',
         ]);
 
+        $oldStatus = $application->status;
         $application->update($validated);
+
+        if ($oldStatus !== $validated['status']) {
+            $application->load('student');
+            if ($application->student && $application->student->email) {
+                try {
+                    Mail::to($application->student->email)->send(new StatusUpdateMail(
+                        $application->student->full_name,
+                        'application',
+                        $application->application_id,
+                        $oldStatus,
+                        $validated['status']
+                    ));
+                } catch (\Exception $e) {
+                }
+            }
+        }
 
         return redirect()->route('consultancy.applications.show', $application)
             ->with('success', 'Application updated successfully!');
