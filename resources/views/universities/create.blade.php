@@ -30,9 +30,18 @@
                                 class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name (Japanese)</label>
-                            <input type="text" name="name_japanese" value="{{ old('name_japanese') }}"
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name (local / alternate)</label>
+                            <input type="text" name="name_japanese" value="{{ old('name_japanese') }}" placeholder="Name in local language"
                                 class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Country</label>
+                            <select name="country" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                                <option value="">Select</option>
+                                @foreach(config('destinations.countries', []) as $c)
+                                    <option value="{{ $c }}" {{ old('country') == $c ? 'selected' : '' }}>{{ $c }}</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type *</label>
@@ -56,6 +65,11 @@
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Established Year</label>
                             <input type="number" name="established" value="{{ old('established') }}" min="1800" max="2030"
                                 class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">International Students</label>
+                            <input type="number" name="number_of_international_students" value="{{ old('number_of_international_students') }}" min="0"
+                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white" placeholder="Count">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tuition Fee (JPY)</label>

@@ -10,7 +10,7 @@ class University extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'name_japanese', 'established', 'number_of_nepali_students',
+        'name', 'name_japanese', 'country', 'established', 'number_of_nepali_students', 'number_of_international_students',
         'banner_image', 'images', 'video_url', 'description', 'description_japanese',
         'address', 'city', 'prefecture', 'website', 'email', 'phone', 'type',
         'institution_type', 'programs_offered', 'admission_requirements', 'tuition_fee',
@@ -22,10 +22,17 @@ class University extends Model
         'programs_offered' => 'array',
         'is_featured' => 'boolean',
         'number_of_nepali_students' => 'integer',
+        'number_of_international_students' => 'integer',
         'established' => 'integer',
         'view_count' => 'integer',
         'tuition_fee' => 'decimal:2',
     ];
+
+    /** Display count of international students (prefer new column, fallback to legacy) */
+    public function getInternationalStudentsCountAttribute(): int
+    {
+        return (int) ($this->number_of_international_students ?? $this->number_of_nepali_students ?? 0);
+    }
 
     public function applications()
     {

@@ -18,7 +18,8 @@ class Student extends Model
         'emergency_contact_name', 'emergency_contact_relation', 'emergency_contact_phone',
         'highest_education', 'last_institution', 'graduation_year', 'gpa',
         'jlpt_level', 'jlpt_date', 'nat_level', 'nat_date', 'jft_level', 'jft_date',
-        'status', 'target_intake', 'target_course_type', 'target_university_id',
+        'ielts_score', 'ielts_date', 'toefl_score', 'toefl_date', 'pte_score', 'pte_date',
+        'status', 'target_intake', 'target_course_type', 'target_university_id', 'target_country',
         'sponsor_type', 'sponsor_name', 'sponsor_relation', 'estimated_budget',
         'source', 'referred_by', 'notes'
     ];
@@ -29,6 +30,9 @@ class Student extends Model
         'jlpt_date' => 'date',
         'nat_date' => 'date',
         'jft_date' => 'date',
+        'ielts_date' => 'date',
+        'toefl_date' => 'date',
+        'pte_date' => 'date',
         'gpa' => 'decimal:2',
         'estimated_budget' => 'decimal:2',
     ];

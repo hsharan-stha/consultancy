@@ -51,6 +51,26 @@
                                 class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                         </div>
                         <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nationality</label>
+                            <input type="text" name="nationality" value="{{ old('nationality', $student->nationality) }}" placeholder="e.g. Nepali, Indian"
+                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Country (residence)</label>
+                            <input type="text" name="country" value="{{ old('country', $student->country) }}" placeholder="e.g. Nepal, India"
+                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name (local / alternate)</label>
+                            <input type="text" name="first_name_japanese" value="{{ old('first_name_japanese', $student->first_name_japanese) }}" placeholder="First name in local script"
+                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name (local) – Last</label>
+                            <input type="text" name="last_name_japanese" value="{{ old('last_name_japanese', $student->last_name_japanese) }}" placeholder="Last name in local script"
+                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                        </div>
+                        <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status *</label>
                             <select name="status" required class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                                 @foreach(['inquiry', 'registered', 'documents_pending', 'documents_submitted', 'applied', 'interview_scheduled', 'accepted', 'visa_processing', 'visa_approved', 'visa_rejected', 'departed', 'enrolled', 'completed', 'cancelled'] as $status)
@@ -102,14 +122,69 @@
                     </div>
                 </div>
 
+                <!-- Language / Test Scores -->
+                <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Language / Test Scores</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">JLPT Level</label>
+                            <select name="jlpt_level" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                                <option value="">Not Taken</option>
+                                @foreach(['N5','N4','N3','N2','N1'] as $l)
+                                    <option value="{{ $l }}" {{ old('jlpt_level', $student->jlpt_level) == $l ? 'selected' : '' }}>{{ $l }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">IELTS Score</label>
+                            <input type="text" name="ielts_score" value="{{ old('ielts_score', $student->ielts_score) }}" placeholder="e.g. 6.5"
+                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">IELTS Date</label>
+                            <input type="date" name="ielts_date" value="{{ old('ielts_date', $student->ielts_date?->format('Y-m-d')) }}"
+                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">TOEFL Score</label>
+                            <input type="text" name="toefl_score" value="{{ old('toefl_score', $student->toefl_score) }}" placeholder="e.g. 90"
+                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">TOEFL Date</label>
+                            <input type="date" name="toefl_date" value="{{ old('toefl_date', $student->toefl_date?->format('Y-m-d')) }}"
+                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">PTE Score</label>
+                            <input type="text" name="pte_score" value="{{ old('pte_score', $student->pte_score) }}" placeholder="e.g. 65"
+                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">PTE Date</label>
+                            <input type="date" name="pte_date" value="{{ old('pte_date', $student->pte_date?->format('Y-m-d')) }}"
+                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Target & Assignment -->
                 <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Target & Assignment</h3>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Target Country</label>
+                            <select name="target_country" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                                <option value="">Select</option>
+                                @foreach(config('destinations.countries', []) as $c)
+                                    <option value="{{ $c }}" {{ old('target_country', $student->target_country) == $c ? 'selected' : '' }}>{{ $c }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Target Intake</label>
-                            <input type="text" name="target_intake" value="{{ old('target_intake', $student->target_intake) }}" placeholder="e.g., April 2026"
+                            <input type="text" name="target_intake" value="{{ old('target_intake', $student->target_intake) }}" placeholder="e.g. April 2026, September 2026"
                                 class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                         </div>
                         <div>
@@ -117,7 +192,7 @@
                             <select name="target_university_id" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                                 <option value="">Select University</option>
                                 @foreach($universities as $university)
-                                    <option value="{{ $university->id }}" {{ old('target_university_id', $student->target_university_id) == $university->id ? 'selected' : '' }}>{{ $university->name }}</option>
+                                    <option value="{{ $university->id }}" {{ old('target_university_id', $student->target_university_id) == $university->id ? 'selected' : '' }}>{{ $university->name }}@if($university->country) ({{ $university->country }})@endif</option>
                                 @endforeach
                             </select>
                         </div>

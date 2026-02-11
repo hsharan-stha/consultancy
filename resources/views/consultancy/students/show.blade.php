@@ -64,6 +64,14 @@
                                 <p class="text-sm text-gray-500">Address</p>
                                 <p class="font-medium text-gray-900 dark:text-white">{{ $student->address }}, {{ $student->city }}</p>
                             </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Nationality</p>
+                                <p class="font-medium text-gray-900 dark:text-white">{{ $student->nationality ?? '—' }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Country (residence)</p>
+                                <p class="font-medium text-gray-900 dark:text-white">{{ $student->country ?? '—' }}</p>
+                            </div>
                         </div>
                     </div>
 
@@ -301,6 +309,10 @@
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Info</h3>
                         <div class="space-y-3">
                             <div>
+                                <p class="text-sm text-gray-500">Target Country</p>
+                                <p class="font-medium text-gray-900 dark:text-white">{{ $student->target_country ?? 'Not set' }}</p>
+                            </div>
+                            <div>
                                 <p class="text-sm text-gray-500">Target Intake</p>
                                 <p class="font-medium text-gray-900 dark:text-white">{{ $student->target_intake ?? 'Not set' }}</p>
                             </div>
@@ -309,8 +321,14 @@
                                 <p class="font-medium text-gray-900 dark:text-white">{{ $student->targetUniversity->name ?? 'Not selected' }}</p>
                             </div>
                             <div>
-                                <p class="text-sm text-gray-500">JLPT Level</p>
-                                <p class="font-medium text-gray-900 dark:text-white">{{ $student->jlpt_level ?? 'N/A' }}</p>
+                                <p class="text-sm text-gray-500">Language / Test Scores</p>
+                                <p class="font-medium text-gray-900 dark:text-white text-sm">
+                                    @if($student->jlpt_level) JLPT {{ $student->jlpt_level }}@endif
+                                    @if($student->ielts_score) @if($student->jlpt_level) · @endif IELTS {{ $student->ielts_score }}@endif
+                                    @if($student->toefl_score) @if($student->jlpt_level || $student->ielts_score) · @endif TOEFL {{ $student->toefl_score }}@endif
+                                    @if($student->pte_score) @if($student->jlpt_level || $student->ielts_score || $student->toefl_score) · @endif PTE {{ $student->pte_score }}@endif
+                                    @if(!$student->jlpt_level && !$student->ielts_score && !$student->toefl_score && !$student->pte_score) — @endif
+                                </p>
                             </div>
                             <div>
                                 <p class="text-sm text-gray-500">Counselor</p>

@@ -75,9 +75,15 @@
                                 <span class="font-medium text-gray-900 dark:text-white">¥{{ number_format($university->tuition_fee) }}/year</span>
                             </div>
                             @endif
+                            @if($university->country)
                             <div class="flex justify-between">
-                                <span class="text-gray-500">Nepali Students</span>
-                                <span class="font-medium text-gray-900 dark:text-white">{{ $university->number_of_nepali_students }}</span>
+                                <span class="text-gray-500">Country</span>
+                                <span class="font-medium text-gray-900 dark:text-white">{{ $university->country }}</span>
+                            </div>
+                            @endif
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">International Students</span>
+                                <span class="font-medium text-gray-900 dark:text-white">{{ $university->international_students_count }}</span>
                             </div>
                         </div>
                     </div>

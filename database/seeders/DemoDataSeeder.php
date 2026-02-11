@@ -319,19 +319,19 @@ class DemoDataSeeder extends Seeder
     private function createConsultancyProfile()
     {
         ConsultancyProfile::create([
-            'name' => 'Japan Study Consultancy',
-            'description' => 'Your trusted partner for studying in Japan. We help students achieve their dreams of studying at top Japanese universities.',
-            'about' => 'Japan Study Consultancy has been helping students from around the world pursue their education in Japan for over 15 years. Our experienced counselors provide personalized guidance throughout the entire application process.',
-            'email' => 'info@japanstudy.com',
-            'phone' => '+81-3-1234-5678',
-            'address' => '123 Education Street, Tokyo, Japan',
-            'website' => 'https://www.japanstudy.com',
-            'services' => "• University Application Assistance\n• Visa Processing Support\n• Language School Placement\n• Scholarship Guidance\n• Pre-departure Orientation\n• Post-arrival Support",
+            'name' => 'Global Study Consultancy',
+            'description' => 'Your trusted partner for studying abroad. We help students achieve their dreams in Canada, USA, Australia, UK, Japan and more.',
+            'about' => 'Global Study Consultancy has been helping students from around the world pursue their education abroad for over 15 years. Our experienced counselors provide personalized guidance for university applications, visa processing, and language preparation.',
+            'email' => 'info@globalstudy.com',
+            'phone' => '+1-234-567-8900',
+            'address' => '123 Education Street',
+            'website' => 'https://www.globalstudy.com',
+            'services' => "• University & College Application Assistance\n• Visa Processing Support\n• Language Test Preparation (IELTS, TOEFL, PTE, JLPT)\n• Scholarship Guidance\n• Pre-departure Orientation\n• Post-arrival Support",
             'social_links' => [
-                'facebook' => 'https://facebook.com/japanstudy',
-                'twitter' => 'https://twitter.com/japanstudy',
-                'linkedin' => 'https://linkedin.com/company/japanstudy',
-                'instagram' => 'https://instagram.com/japanstudy',
+                'facebook' => 'https://facebook.com/globalstudy',
+                'twitter' => 'https://twitter.com/globalstudy',
+                'linkedin' => 'https://linkedin.com/company/globalstudy',
+                'instagram' => 'https://instagram.com/globalstudy',
             ],
             'is_active' => true,
         ]);
@@ -372,6 +372,10 @@ class DemoDataSeeder extends Seeder
                 'city' => $cities[$index % count($cities)],
                 'country' => 'Nepal',
                 'status' => $statuses[array_rand($statuses)],
+                'target_country' => (function () {
+                    $countries = config('destinations.countries', ['Japan', 'Canada', 'USA', 'Australia', 'UK']);
+                    return $countries[array_rand($countries)];
+                })(),
                 'target_intake' => $intakes[array_rand($intakes)],
                 'target_course_type' => $courseTypes[array_rand($courseTypes)],
                 'highest_education' => ['High School', 'Bachelor\'s Degree', 'Master\'s Degree'][rand(0, 2)],
@@ -775,7 +779,7 @@ class DemoDataSeeder extends Seeder
             $courses[] = Course::create([
                 'course_code' => $data['code'],
                 'course_name' => $data['name'],
-                'description' => 'Comprehensive ' . $data['name'] . ' course for students planning to study in Japan.',
+                'description' => 'Comprehensive ' . $data['name'] . ' course for students planning to study abroad.',
                 'level' => $data['level'],
                 'duration_hours' => $data['hours'],
                 'fee' => $data['fee'],

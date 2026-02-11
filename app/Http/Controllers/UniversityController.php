@@ -13,10 +13,15 @@ class UniversityController extends Controller
         return view('universities.index', compact('universities'));
     }
 
-    public function publicIndex()
+    public function publicIndex(Request $request)
     {
-        $universities = University::orderBy('name')->get();
-        return view('universities.public-index', compact('universities'));
+        $query = University::orderBy('name');
+        if ($request->filled('country')) {
+            $query->where('country', $request->country);
+        }
+        $universities = $query->get();
+        $countries = config('destinations.countries', []);
+        return view('universities.public-index', compact('universities', 'countries'));
     }
 
     public function create()
@@ -29,7 +34,9 @@ class UniversityController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'name_japanese' => 'nullable|string|max:255',
+            'country' => 'nullable|string|max:255',
             'established' => 'nullable|integer|min:1800|max:2030',
+            'number_of_international_students' => 'nullable|integer|min:0',
             'type' => 'required|in:university,college,school,vocational',
             'institution_type' => 'nullable|string|max:255',
             'description' => 'nullable|string',
@@ -80,7 +87,9 @@ class UniversityController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'name_japanese' => 'nullable|string|max:255',
+            'country' => 'nullable|string|max:255',
             'established' => 'nullable|integer|min:1800|max:2030',
+            'number_of_international_students' => 'nullable|integer|min:0',
             'type' => 'required|in:university,college,school,vocational',
             'institution_type' => 'nullable|string|max:255',
             'description' => 'nullable|string',
