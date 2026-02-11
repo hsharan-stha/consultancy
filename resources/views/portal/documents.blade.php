@@ -19,14 +19,9 @@
                                     <x-input-label for="document_type" :value="__('Document Type')" />
                                     <select name="document_type" id="document_type" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600">
                                         <option value="">Select Document Type</option>
-                                        <option value="passport">Passport</option>
-                                        <option value="transcript">Transcript</option>
-                                        <option value="diploma">Diploma</option>
-                                        <option value="recommendation_letter">Recommendation Letter</option>
-                                        <option value="language_certificate">Language Certificate</option>
-                                        <option value="financial_statement">Financial Statement</option>
-                                        <option value="medical_certificate">Medical Certificate</option>
-                                        <option value="other">Other</option>
+                                        @foreach($documentChecklist ?? [] as $item)
+                                            <option value="{{ $item->document_type }}">{{ $item->name }}</option>
+                                        @endforeach
                                     </select>
                                     <x-input-error :messages="$errors->get('document_type')" class="mt-2" />
                                 </div>

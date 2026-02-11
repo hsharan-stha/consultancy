@@ -28,8 +28,11 @@
                             <!-- Progress Steps -->
                             <div class="flex justify-between items-center mt-4">
                                 @php
-                                    $steps = ['applied', 'accepted', 'visa_processing', 'visa_approved', 'departed'];
+                                    $steps = ['applied', 'accepted', 'document_collection', 'visa_processing', 'visa_approved', 'departed'];
                                     $currentIndex = array_search($student->status, $steps);
+                                    if ($currentIndex === false) {
+                                        $currentIndex = in_array($student->status, ['document_collection', 'documents_preparing']) ? 2 : 0;
+                                    }
                                 @endphp
                                 @foreach($steps as $index => $step)
                                 <div class="flex flex-col items-center">
@@ -52,6 +55,14 @@
                         <p class="text-gray-500 text-center py-4">No active application. Contact your counselor to get started.</p>
                         @endif
                     </div>
+
+                    @if(in_array($student->status, ['document_collection', 'documents_preparing']))
+                    <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+                        <p class="text-amber-800 dark:text-amber-200 font-medium">You are in the <strong>Document collection</strong> step.</p>
+                        <p class="text-sm text-amber-700 dark:text-amber-300 mt-1">Please prepare and upload the required documents so we can proceed with your visa application.</p>
+                        <a href="{{ route('portal.documents') }}" class="inline-block mt-3 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium rounded-lg">Upload Documents</a>
+                    </div>
+                    @endif
 
                     <!-- Documents -->
                     <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">

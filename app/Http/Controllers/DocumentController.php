@@ -5,7 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Document;
 use App\Models\Student;
 use App\Models\DocumentChecklist;
+use App\Models\ConsultancyProfile;
+use App\Mail\DocumentStatusMail;
+use App\Mail\DocumentRemovedMail;
+use App\Mail\DocumentStatusConsultancyMail;
+use App\Mail\DocumentRemovedConsultancyMail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class DocumentController extends Controller
 {
@@ -112,17 +118,47 @@ class DocumentController extends Controller
             'verified_at' => now(),
         ]);
 
+        $document->load('student');
+        if ($document->student && $document->student->email) {
+            try {
+                Mail::to($document->student->email)->send(new DocumentStatusMail($document, $validated['status']));
+            } catch (\Exception $e) {
+            }
+        }
+        $profile = ConsultancyProfile::where('is_active', true)->first();
+        if ($profile && $profile->email) {
+            try {
+                Mail::to($profile->email)->send(new DocumentStatusConsultancyMail($document, $validated['status']));
+            } catch (\Exception $e) {
+            }
+        }
+
         return redirect()->back()
             ->with('success', 'Document ' . $validated['status'] . ' successfully!');
     }
 
     public function destroy(Document $document)
     {
+        $document->load('student');
+        if ($document->student && $document->student->email) {
+            try {
+                Mail::to($document->student->email)->send(new DocumentRemovedMail($document));
+            } catch (\Exception $e) {
+            }
+        }
+        $profile = ConsultancyProfile::where('is_active', true)->first();
+        if ($profile && $profile->email) {
+            try {
+                Mail::to($profile->email)->send(new DocumentRemovedConsultancyMail($document));
+            } catch (\Exception $e) {
+            }
+        }
+
         // Delete file
-        if (file_exists(public_path($document->file_path))) {
+        if ($document->file_path && file_exists(public_path($document->file_path))) {
             unlink(public_path($document->file_path));
         }
-        
+
         $document->delete();
         return redirect()->back()
             ->with('success', 'Document deleted successfully!');

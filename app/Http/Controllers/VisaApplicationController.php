@@ -39,10 +39,12 @@ class VisaApplicationController extends Controller
 
     public function create(Request $request)
     {
-        $students = Student::whereIn('status', ['accepted', 'visa_processing'])->orderBy('first_name')->get();
+        $students = Student::whereIn('status', ['accepted', 'document_collection', 'visa_processing'])->orderBy('first_name')->get();
         $counselors = Counselor::with('user')->where('is_active', true)->get();
         $selectedStudent = $request->student_id ? Student::find($request->student_id) : null;
-        $applications = $selectedStudent ? $selectedStudent->applications()->where('status', 'accepted')->get() : collect();
+        $applications = $selectedStudent
+            ? $selectedStudent->applications()->whereIn('status', ['accepted', 'enrolled'])->with('university')->orderBy('created_at', 'desc')->get()
+            : collect();
         
         return view('consultancy.visa.create', compact('students', 'counselors', 'selectedStudent', 'applications'));
     }

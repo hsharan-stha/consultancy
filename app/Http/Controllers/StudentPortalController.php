@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Student;
 use App\Models\Task;
 use App\Models\Document;
+use App\Models\DocumentChecklist;
 use App\Models\Application;
 use App\Models\Payment;
 use App\Models\Communication;
 use App\Models\Course;
 use App\Models\ConsultancyProfile;
 use App\Mail\DocumentUploadedByStudentMail;
+use App\Mail\DocumentReceivedMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -88,8 +90,9 @@ class StudentPortalController extends Controller
     {
         $student = $this->getAuthenticatedStudent();
         $documents = $student->documents()->orderBy('created_at', 'desc')->get();
+        $documentChecklist = DocumentChecklist::orderBy('order')->get();
         
-        return view('portal.documents', compact('student', 'documents'));
+        return view('portal.documents', compact('student', 'documents', 'documentChecklist'));
     }
 
     public function uploadDocument(Request $request)
@@ -127,6 +130,12 @@ class StudentPortalController extends Controller
         if ($profile && $profile->email) {
             try {
                 Mail::to($profile->email)->send(new DocumentUploadedByStudentMail($document));
+            } catch (\Exception $e) {
+            }
+        }
+        if ($student->email) {
+            try {
+                Mail::to($student->email)->send(new DocumentReceivedMail($document));
             } catch (\Exception $e) {
             }
         }

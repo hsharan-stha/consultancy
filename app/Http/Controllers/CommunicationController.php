@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Communication;
 use App\Models\Student;
+use App\Models\ConsultancyProfile;
 use App\Mail\CommunicationToStudentMail;
+use App\Mail\CommunicationSentConsultancyMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
@@ -82,6 +84,14 @@ class CommunicationController extends Controller
                     Mail::to($toEmail)->send(new CommunicationToStudentMail($communication));
                 } catch (\Exception $e) {
                 }
+            }
+        }
+
+        $profile = ConsultancyProfile::where('is_active', true)->first();
+        if ($profile && $profile->email) {
+            try {
+                Mail::to($profile->email)->send(new CommunicationSentConsultancyMail($communication));
+            } catch (\Exception $e) {
             }
         }
 

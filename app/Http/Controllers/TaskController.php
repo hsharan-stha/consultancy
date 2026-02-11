@@ -6,8 +6,10 @@ use App\Models\Task;
 use App\Models\Student;
 use App\Models\Application;
 use App\Models\User;
+use App\Models\ConsultancyProfile;
 use App\Mail\TaskCreatedForStudentMail;
 use App\Mail\TaskAssignedMail;
+use App\Mail\TaskCreatedConsultancyMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
@@ -89,6 +91,14 @@ class TaskController extends Controller
         if ($task->assigned_to && $task->assignedTo && $task->assignedTo->email) {
             try {
                 Mail::to($task->assignedTo->email)->send(new TaskAssignedMail($task));
+            } catch (\Exception $e) {
+            }
+        }
+
+        $profile = ConsultancyProfile::where('is_active', true)->first();
+        if ($profile && $profile->email) {
+            try {
+                Mail::to($profile->email)->send(new TaskCreatedConsultancyMail($task));
             } catch (\Exception $e) {
             }
         }

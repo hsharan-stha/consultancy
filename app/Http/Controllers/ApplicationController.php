@@ -6,9 +6,13 @@ use App\Models\Application;
 use App\Models\Student;
 use App\Models\University;
 use App\Models\Counselor;
+use App\Models\Task;
+use App\Models\ConsultancyProfile;
 use App\Mail\ApplicationCreatedMail;
 use App\Mail\ApplicationUpdatedMail;
 use App\Mail\COEAppliedMail;
+use App\Mail\TaskCreatedForStudentMail;
+use App\Mail\TaskCreatedConsultancyMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
@@ -71,9 +75,11 @@ class ApplicationController extends Controller
 
         $application = Application::create($validated);
 
-        // Update student status
+        // Automatically set student status to 'applied' when an application is created
         $student = Student::find($validated['student_id']);
-        $student->update(['status' => 'applied']);
+        if ($student) {
+            $student->update(['status' => 'applied']);
+        }
 
         if ($student && $student->email) {
             try {
@@ -131,9 +137,51 @@ class ApplicationController extends Controller
         $oldCoeStatus = $application->coe_status;
         $oldCoeAppliedDate = $application->coe_applied_date;
         $application->update($validated);
-        $application->load('student');
+        $application->load(['student', 'university']);
 
-        if ($application->student && $application->student->email) {
+        // When status is set to documents_preparing, move student to document_collection step and create a task (from application section)
+        $student = $application->student;
+        if ($student && $validated['status'] === 'documents_preparing' && $oldStatus !== 'documents_preparing') {
+            $laterStages = ['visa_processing', 'visa_approved', 'visa_rejected', 'departed', 'enrolled', 'completed'];
+            if (!in_array($student->status, $laterStages, true)) {
+                $student->update(['status' => 'document_collection']);
+            }
+            $universityName = $application->university->name ?? 'university';
+            $task = Task::create([
+                'student_id' => $student->id,
+                'application_id' => $application->id,
+                'title' => 'Prepare documents for ' . $universityName . ' (' . $application->application_id . ')',
+                'description' => 'Please prepare and upload the required documents for this application. You can upload documents from your portal under My Documents.',
+                'type' => 'documents',
+                'priority' => 'medium',
+                'status' => 'pending',
+                'assigned_by' => auth()->id(),
+            ]);
+            $task->load(['student', 'assignedTo', 'assignedBy']);
+            if ($student->email) {
+                try {
+                    Mail::to($student->email)->send(new TaskCreatedForStudentMail($task));
+                } catch (\Exception $e) {
+                }
+            }
+            $profile = ConsultancyProfile::where('is_active', true)->first();
+            if ($profile && $profile->email) {
+                try {
+                    Mail::to($profile->email)->send(new TaskCreatedConsultancyMail($task));
+                } catch (\Exception $e) {
+                }
+            }
+        }
+
+        // When an application becomes accepted/enrolled, sync student status to 'accepted' so they can proceed (unless already further along)
+        if ($student && in_array($validated['status'], ['accepted', 'enrolled'], true)) {
+            $laterStages = ['document_collection', 'visa_processing', 'visa_approved', 'visa_rejected', 'departed', 'enrolled', 'completed'];
+            if (!in_array($student->status, $laterStages, true)) {
+                $student->update(['status' => 'accepted']);
+            }
+        }
+
+        if ($student && $student->email) {
             try {
                 Mail::to($application->student->email)->send(new ApplicationUpdatedMail($application));
             } catch (\Exception $e) {

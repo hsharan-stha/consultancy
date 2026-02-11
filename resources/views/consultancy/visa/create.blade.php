@@ -14,14 +14,16 @@
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Student *</label>
-                            <select name="student_id" required class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                            <select name="student_id" id="student_id" required class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                onchange="window.location=this.value ? '{{ route('consultancy.visa.create') }}?student_id='+this.value : '{{ route('consultancy.visa.create') }}';">
                                 <option value="">Select Student</option>
                                 @foreach($students as $student)
-                                    <option value="{{ $student->id }}" {{ (old('student_id') ?? $selectedStudent?->id) == $student->id ? 'selected' : '' }}>
+                                    <option value="{{ $student->id }}" {{ (old('student_id') ?? $selectedStudent?->id ?? request('student_id')) == $student->id ? 'selected' : '' }}>
                                         {{ $student->full_name }} ({{ $student->student_id }})
                                     </option>
                                 @endforeach
                             </select>
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Select a student to load their accepted applications.</p>
                         </div>
 
                         <div>
