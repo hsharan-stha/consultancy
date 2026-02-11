@@ -88,6 +88,46 @@
                         @endif
                     </div>
 
+                    <!-- Courses (Enrolled) -->
+                    <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Courses</h3>
+                            <a href="{{ route('consultancy.courses.index') }}" class="text-blue-600 hover:text-blue-800 text-sm">View all courses</a>
+                        </div>
+                        @if($student->courses->count())
+                            <div class="space-y-3">
+                                @foreach($student->courses as $course)
+                                <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                                    <div class="flex justify-between items-start gap-3">
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ $course->course_code }}</p>
+                                            <p class="font-medium text-gray-900 dark:text-white">{{ $course->course_name }}</p>
+                                            @if($course->level)
+                                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Level: {{ $course->level }}</p>
+                                            @endif
+                                            <div class="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                                <span>Enrolled: {{ $course->pivot->enrolled_at ? \Carbon\Carbon::parse($course->pivot->enrolled_at)->format('M d, Y') : '—' }}</span>
+                                                @if($course->duration_hours)
+                                                    <span>{{ $course->duration_hours }} hrs</span>
+                                                @endif
+                                                @if($course->fee !== null)
+                                                    <span>{{ $course->currency }} {{ number_format($course->fee, 2) }}</span>
+                                                @endif
+                                            </div>
+                                            @if($course->description)
+                                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">{{ Str::limit($course->description, 100) }}</p>
+                                            @endif
+                                        </div>
+                                        <a href="{{ route('consultancy.courses.show', $course) }}" class="text-blue-600 hover:text-blue-800 text-sm whitespace-nowrap shrink-0">View course →</a>
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <p class="text-gray-500 dark:text-gray-400 text-center py-4">Not enrolled in any courses yet</p>
+                        @endif
+                    </div>
+
                     <!-- Documents -->
                     <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
                         <div class="flex justify-between items-center mb-4">

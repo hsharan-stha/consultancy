@@ -116,7 +116,8 @@ class StudentController extends Controller
         $student->load([
             'counselor.user', 'targetUniversity', 'documents',
             'applications.university', 'visaApplications', 'payments',
-            'tasks', 'communications.user', 'inquiries'
+            'tasks', 'communications.user', 'inquiries',
+            'courses' => fn ($q) => $q->wherePivot('status', 'enrolled')->orderByPivot('enrolled_at', 'desc'),
         ]);
         return view('consultancy.students.show', compact('student'));
     }
