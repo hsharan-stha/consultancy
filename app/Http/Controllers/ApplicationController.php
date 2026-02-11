@@ -10,6 +10,7 @@ use App\Models\Task;
 use App\Models\ConsultancyProfile;
 use App\Mail\ApplicationCreatedMail;
 use App\Mail\ApplicationUpdatedMail;
+use App\Mail\ApplicationInterviewMail;
 use App\Mail\COEAppliedMail;
 use App\Mail\TaskCreatedForStudentMail;
 use App\Mail\TaskCreatedConsultancyMail;
@@ -185,6 +186,17 @@ class ApplicationController extends Controller
             try {
                 Mail::to($application->student->email)->send(new ApplicationUpdatedMail($application));
             } catch (\Exception $e) {
+            }
+            // Send interview notification when application is updated for interview (status = interview_scheduled or interview date/details set)
+            $isInterviewUpdate = ($validated['status'] ?? '') === 'interview_scheduled'
+                || !empty($validated['interview_date'])
+                || !empty($validated['interview_mode'])
+                || !empty($validated['interview_notes']);
+            if ($isInterviewUpdate) {
+                try {
+                    Mail::to($student->email)->send(new ApplicationInterviewMail($application));
+                } catch (\Exception $e) {
+                }
             }
             $coeStatusNow = $validated['coe_status'] ?? null;
             $coeAppliedDateNow = isset($validated['coe_applied_date']) ? $validated['coe_applied_date'] : null;
