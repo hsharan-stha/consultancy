@@ -101,4 +101,17 @@ class Student extends Model
     {
         return $this->hasMany(Communication::class);
     }
+
+    public function courses()
+    {
+        return $this->belongsToMany(Course::class, 'course_student')
+            ->withPivot('enrolled_at', 'status', 'notes')
+            ->withTimestamps();
+    }
+
+    /** Enrollments where status is enrolled */
+    public function enrolledCourses()
+    {
+        return $this->courses()->wherePivot('status', 'enrolled');
+    }
 }

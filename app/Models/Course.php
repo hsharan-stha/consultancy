@@ -46,4 +46,23 @@ class Course extends Model
     {
         return $this->hasMany(TeacherCourse::class);
     }
+
+    public function students()
+    {
+        return $this->belongsToMany(Student::class, 'course_student')
+            ->withPivot('enrolled_at', 'status', 'notes')
+            ->withTimestamps();
+    }
+
+    /** Number of students currently enrolled (status = enrolled) */
+    public function enrolledStudentsCount(): int
+    {
+        return $this->students()->wherePivot('status', 'enrolled')->count();
+    }
+
+    /** Whether the course has capacity for more enrollments */
+    public function hasCapacity(): bool
+    {
+        return $this->enrolledStudentsCount() < $this->max_students;
+    }
 }

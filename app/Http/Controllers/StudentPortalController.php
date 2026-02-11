@@ -8,6 +8,7 @@ use App\Models\Document;
 use App\Models\Application;
 use App\Models\Payment;
 use App\Models\Communication;
+use App\Models\Course;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -214,6 +215,78 @@ class StudentPortalController extends Controller
 
         return redirect()->route('portal.messages')
             ->with('success', 'Message sent successfully!');
+    }
+
+    public function courses()
+    {
+        $student = $this->getAuthenticatedStudent();
+        if (!$student) {
+            return redirect()->route('home')->with('error', 'No student profile found.');
+        }
+
+        $enrolledCourseIds = $student->enrolledCourses()->pluck('courses.id')->toArray();
+
+        $availableCourses = Course::where('status', 'active')
+            ->whereNotIn('id', $enrolledCourseIds)
+            ->orderBy('course_name')
+            ->get();
+
+        $myEnrollments = $student->courses()
+            ->wherePivot('status', 'enrolled')
+            ->orderByPivot('enrolled_at', 'desc')
+            ->get();
+
+        return view('portal.courses', compact('student', 'availableCourses', 'myEnrollments'));
+    }
+
+    public function enroll(Course $course)
+    {
+        $student = $this->getAuthenticatedStudent();
+        if (!$student) {
+            return redirect()->route('home')->with('error', 'No student profile found.');
+        }
+
+        if ($course->status !== 'active') {
+            return redirect()->route('portal.courses')
+                ->with('error', 'This course is not open for enrollment.');
+        }
+
+        if ($student->courses()->where('course_id', $course->id)->wherePivot('status', 'enrolled')->exists()) {
+            return redirect()->route('portal.courses')
+                ->with('error', 'You are already enrolled in this course.');
+        }
+
+        if (!$course->hasCapacity()) {
+            return redirect()->route('portal.courses')
+                ->with('error', 'This course is full. No more enrollments accepted.');
+        }
+
+        $student->courses()->attach($course->id, [
+            'status' => 'enrolled',
+            'enrolled_at' => now(),
+        ]);
+
+        return redirect()->route('portal.courses')
+            ->with('success', 'You have successfully enrolled in ' . $course->course_name . '!');
+    }
+
+    public function withdraw(Course $course)
+    {
+        $student = $this->getAuthenticatedStudent();
+        if (!$student) {
+            return redirect()->route('home')->with('error', 'No student profile found.');
+        }
+
+        $enrollment = $student->courses()->where('course_id', $course->id)->wherePivot('status', 'enrolled')->first();
+        if (!$enrollment) {
+            return redirect()->route('portal.courses')
+                ->with('error', 'You are not enrolled in this course.');
+        }
+
+        $student->courses()->updateExistingPivot($course->id, ['status' => 'withdrawn']);
+
+        return redirect()->route('portal.courses')
+            ->with('success', 'You have withdrawn from ' . $course->course_name . '.');
     }
 
     private function getAuthenticatedStudent()

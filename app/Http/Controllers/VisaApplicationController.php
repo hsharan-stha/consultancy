@@ -62,7 +62,7 @@ class VisaApplicationController extends Controller
         $student = Student::find($validated['student_id']);
         $student->update(['status' => 'visa_processing']);
 
-        return redirect()->route('visa.show', $visaApplication)
+        return redirect()->route('consultancy.visa.show', $visaApplication)
             ->with('success', 'Visa application created successfully! ID: ' . $visaApplication->visa_application_id);
     }
 
@@ -113,14 +113,14 @@ class VisaApplicationController extends Controller
             $student->update(['status' => 'departed']);
         }
 
-        return redirect()->route('visa.show', $visa)
+        return redirect()->route('consultancy.visa.show', $visa)
             ->with('success', 'Visa application updated successfully!');
     }
 
     public function destroy(VisaApplication $visa)
     {
         $visa->delete();
-        return redirect()->route('visa.index')
+        return redirect()->route('consultancy.visa.index')
             ->with('success', 'Visa application deleted successfully!');
     }
 }
