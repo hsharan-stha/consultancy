@@ -40,23 +40,23 @@
                             <select name="university_id" required class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                                 <option value="">Select University</option>
                                 @foreach($universities as $university)
-                                    <option value="{{ $university->id }}" {{ old('university_id') == $university->id ? 'selected' : '' }}>{{ $university->name }}</option>
+                                    <option value="{{ $university->id }}" {{ old('university_id', $selectedStudent?->target_university_id) == $university->id ? 'selected' : '' }}>{{ $university->name }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Intake *</label>
-                            <input type="text" name="intake" value="{{ old('intake') }}" required placeholder="e.g., April 2026"
+                            <input type="text" name="intake" value="{{ old('intake', $selectedStudent?->target_intake) }}" required placeholder="e.g., April 2026"
                                 class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Course Type</label>
                             <select name="course_type" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                                 <option value="">Select</option>
-                                <option value="Language School" {{ old('course_type') == 'Language School' ? 'selected' : '' }}>Language School</option>
-                                <option value="University" {{ old('course_type') == 'University' ? 'selected' : '' }}>University</option>
-                                <option value="Vocational" {{ old('course_type') == 'Vocational' ? 'selected' : '' }}>Vocational School</option>
-                                <option value="Graduate School" {{ old('course_type') == 'Graduate School' ? 'selected' : '' }}>Graduate School</option>
+                                <option value="Language School" {{ old('course_type', $selectedStudent?->target_course_type) == 'Language School' ? 'selected' : '' }}>Language School</option>
+                                <option value="University" {{ old('course_type', $selectedStudent?->target_course_type) == 'University' ? 'selected' : '' }}>University</option>
+                                <option value="Vocational" {{ old('course_type', $selectedStudent?->target_course_type) == 'Vocational' ? 'selected' : '' }}>Vocational School</option>
+                                <option value="Graduate School" {{ old('course_type', $selectedStudent?->target_course_type) == 'Graduate School' ? 'selected' : '' }}>Graduate School</option>
                             </select>
                         </div>
                         <div>
@@ -74,7 +74,7 @@
                             <select name="counselor_id" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                                 <option value="">Select Counselor</option>
                                 @foreach($counselors as $counselor)
-                                    <option value="{{ $counselor->id }}" {{ old('counselor_id') == $counselor->id ? 'selected' : '' }}>{{ $counselor->user->name ?? 'N/A' }}</option>
+                                    <option value="{{ $counselor->id }}" {{ old('counselor_id', $selectedStudent?->counselor_id) == $counselor->id ? 'selected' : '' }}>{{ $counselor->user->name ?? 'N/A' }}</option>
                                 @endforeach
                             </select>
                         </div>

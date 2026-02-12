@@ -8,6 +8,8 @@ use App\Models\Counselor;
 use App\Models\User;
 use App\Models\Role;
 use App\Models\Course;
+use App\Models\DocumentChecklist;
+use App\Models\Application;
 use App\Mail\StatusUpdateMail;
 use App\Mail\StudentCreatedMail;
 use Illuminate\Http\Request;
@@ -154,7 +156,20 @@ class StudentController extends Controller
             ->get()
             ->filter(fn ($c) => $c->hasCapacity());
         $hasCompletedPayment = $student->payments()->where('status', 'completed')->exists();
-        return view('consultancy.students.show', compact('student', 'availableCoursesForEnrollment', 'hasCompletedPayment'));
+
+        // Required documents (checklist for student's target country) with submitted/remaining status
+        $country = $student->target_country ?? null;
+        $documentChecklist = DocumentChecklist::forCountry($country)->orderBy('order')->get();
+        $requiredDocumentsStatus = $documentChecklist->map(function ($item) use ($student) {
+            $document = $student->documents()->where('document_type', $item->document_type)->orderBy('created_at', 'desc')->first();
+            return (object) [
+                'item' => $item,
+                'submitted' => $document !== null,
+                'document' => $document,
+            ];
+        });
+
+        return view('consultancy.students.show', compact('student', 'availableCoursesForEnrollment', 'hasCompletedPayment', 'requiredDocumentsStatus'));
     }
 
     public function edit(Student $student)
@@ -243,6 +258,26 @@ class StudentController extends Controller
 
         $oldStatus = $student->status;
         $student->update($validated);
+
+        // Auto-patch applications: fill empty application fields with student's matching target_* / counselor
+        foreach ($student->applications as $application) {
+            $updates = [];
+            if (empty($application->university_id) && $student->target_university_id) {
+                $updates['university_id'] = $student->target_university_id;
+            }
+            if (empty($application->intake) && $student->target_intake) {
+                $updates['intake'] = $student->target_intake;
+            }
+            if (empty($application->course_type) && $student->target_course_type) {
+                $updates['course_type'] = $student->target_course_type;
+            }
+            if (empty($application->counselor_id) && $student->counselor_id) {
+                $updates['counselor_id'] = $student->counselor_id;
+            }
+            if (!empty($updates)) {
+                $application->update($updates);
+            }
+        }
 
         if ($oldStatus !== $validated['status'] && $student->email) {
             try {

@@ -74,10 +74,12 @@ class ApplicationController extends Controller
             'notes' => 'nullable|string',
         ]);
 
+        $student = Student::find($validated['student_id']);
+        $validated = self::patchApplicationFromStudent($student, $validated);
+
         $application = Application::create($validated);
 
         // Automatically set student status to 'applied' when an application is created
-        $student = Student::find($validated['student_id']);
         if ($student) {
             $student->update(['status' => 'applied']);
         }
@@ -137,6 +139,10 @@ class ApplicationController extends Controller
         $oldStatus = $application->status;
         $oldCoeStatus = $application->coe_status;
         $oldCoeAppliedDate = $application->coe_applied_date;
+
+        $student = $application->student;
+        $validated = self::patchApplicationFromStudent($student, $validated);
+
         $application->update($validated);
         $application->load(['student', 'university']);
 
@@ -219,5 +225,28 @@ class ApplicationController extends Controller
         $application->delete();
         return redirect()->route('consultancy.applications.index')
             ->with('success', 'Application deleted successfully!');
+    }
+
+    /**
+     * Auto-patch application data from student: fill empty application fields with student's matching target_* / counselor.
+     */
+    private static function patchApplicationFromStudent(?Student $student, array $data): array
+    {
+        if (!$student) {
+            return $data;
+        }
+        if ((empty($data['university_id']) || $data['university_id'] === '') && $student->target_university_id) {
+            $data['university_id'] = $student->target_university_id;
+        }
+        if (empty($data['intake']) && $student->target_intake) {
+            $data['intake'] = $student->target_intake;
+        }
+        if (empty($data['course_type']) && $student->target_course_type) {
+            $data['course_type'] = $student->target_course_type;
+        }
+        if (empty($data['counselor_id']) && $student->counselor_id) {
+            $data['counselor_id'] = $student->counselor_id;
+        }
+        return $data;
     }
 }

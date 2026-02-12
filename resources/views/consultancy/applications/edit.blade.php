@@ -41,13 +41,13 @@
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">University *</label>
                             <select name="university_id" required class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                                 @foreach($universities as $university)
-                                    <option value="{{ $university->id }}" {{ old('university_id', $application->university_id) == $university->id ? 'selected' : '' }}>{{ $university->name }}</option>
+                                    <option value="{{ $university->id }}" {{ old('university_id', $application->university_id ?? $application->student?->target_university_id) == $university->id ? 'selected' : '' }}>{{ $university->name }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Intake *</label>
-                            <input type="text" name="intake" value="{{ old('intake', $application->intake) }}" required
+                            <input type="text" name="intake" value="{{ old('intake', $application->intake ?? $application->student?->target_intake) }}" required
                                 class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                         </div>
                         <div>
@@ -55,7 +55,7 @@
                             <select name="course_type" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                                 <option value="">Select</option>
                                 @foreach(['Language School', 'University', 'Vocational', 'Graduate School'] as $type)
-                                    <option value="{{ $type }}" {{ old('course_type', $application->course_type) == $type ? 'selected' : '' }}>{{ $type }}</option>
+                                    <option value="{{ $type }}" {{ old('course_type', $application->course_type ?? $application->student?->target_course_type) == $type ? 'selected' : '' }}>{{ $type }}</option>
                                 @endforeach
                             </select>
                         </div>

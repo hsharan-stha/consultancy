@@ -91,9 +91,20 @@ class StudentPortalController extends Controller
     {
         $student = $this->getAuthenticatedStudent();
         $documents = $student->documents()->orderBy('created_at', 'desc')->get();
-        $documentChecklist = DocumentChecklist::orderBy('order')->get();
-        
-        return view('portal.documents', compact('student', 'documents', 'documentChecklist'));
+        $country = $student->target_country ?? null;
+        $documentChecklist = DocumentChecklist::forCountry($country)->orderBy('order')->get();
+
+        // Build required-documents status: for each checklist item, latest submitted document (if any)
+        $requiredDocumentsStatus = $documentChecklist->map(function ($item) use ($student) {
+            $document = $student->documents()->where('document_type', $item->document_type)->orderBy('created_at', 'desc')->first();
+            return (object) [
+                'item' => $item,
+                'submitted' => $document !== null,
+                'document' => $document,
+            ];
+        });
+
+        return view('portal.documents', compact('student', 'documents', 'documentChecklist', 'requiredDocumentsStatus'));
     }
 
     public function uploadDocument(Request $request)

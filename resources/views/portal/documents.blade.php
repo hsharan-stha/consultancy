@@ -7,8 +7,71 @@
 
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            @if (session('success'))
+                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded dark:bg-green-900/30 dark:border-green-700 dark:text-green-200">{{ session('success') }}</div>
+            @endif
+
             <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg">
                 <div class="p-6">
+                    <!-- Required documents list (based on target country) -->
+                    @if(isset($requiredDocumentsStatus) && $requiredDocumentsStatus->isNotEmpty())
+                    <div class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Required documents</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Based on your target country{{ $student->target_country ? ': ' . $student->target_country : '' }}. Submit documents below for each type.</p>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead class="bg-gray-50 dark:bg-gray-700">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Document</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Type</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Required</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Status</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                    @foreach($requiredDocumentsStatus as $row)
+                                    <tr>
+                                        <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">{{ $row->item->name }}</td>
+                                        <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{{ $row->item->document_type }}</td>
+                                        <td class="px-4 py-3 text-sm">
+                                            @if($row->item->is_required)
+                                                <span class="px-2 py-0.5 text-xs rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">Required</span>
+                                            @else
+                                                <span class="text-gray-500 dark:text-gray-400">Optional</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-4 py-3 text-sm">
+                                            @if($row->submitted)
+                                                <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Submitted</span>
+                                            @else
+                                                <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">Remaining</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-4 py-3 text-sm">
+                                            @if($row->submitted && $row->document)
+                                                @if($row->document->status === 'verified')
+                                                    <span class="text-green-600 dark:text-green-400">Verified</span>
+                                                @elseif($row->document->status === 'pending')
+                                                    <span class="text-amber-600 dark:text-amber-400">Pending review</span>
+                                                @elseif($row->document->status === 'rejected')
+                                                    <span class="text-red-600 dark:text-red-400">Rejected</span>
+                                                @endif
+                                                @if($row->document->file_path)
+                                                    <a href="{{ asset($row->document->file_path) }}" target="_blank" class="ml-2 text-indigo-600 hover:text-indigo-800 dark:text-indigo-400">View</a>
+                                                @endif
+                                            @else
+                                                <span class="text-gray-500 dark:text-gray-400">—</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    @endif
+
                     <!-- Upload Document Form -->
                     <div class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Upload New Document</h3>

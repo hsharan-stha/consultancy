@@ -206,6 +206,63 @@
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Documents</h3>
                             <a href="{{ route('consultancy.documents.create', ['student_id' => $student->id]) }}" class="text-blue-600 hover:text-blue-800 text-sm">+ Upload Document</a>
                         </div>
+
+                        @if(isset($requiredDocumentsStatus) && $requiredDocumentsStatus->isNotEmpty())
+                        <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+                            <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Required documents (target country{{ $student->target_country ? ': ' . $student->target_country : '' }})</h4>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-sm">
+                                    <thead>
+                                        <tr class="text-left text-xs text-gray-500 dark:text-gray-400 uppercase border-b border-gray-200 dark:border-gray-600">
+                                            <th class="pb-2 pr-4">Document</th>
+                                            <th class="pb-2 pr-4">Type</th>
+                                            <th class="pb-2 pr-4">Required</th>
+                                            <th class="pb-2 pr-4">Status</th>
+                                            <th class="pb-2">Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
+                                        @foreach($requiredDocumentsStatus as $row)
+                                        <tr>
+                                            <td class="py-2 pr-4 font-medium text-gray-900 dark:text-white">{{ $row->item->name }}</td>
+                                            <td class="py-2 pr-4 text-gray-600 dark:text-gray-400">{{ $row->item->document_type }}</td>
+                                            <td class="py-2 pr-4">
+                                                @if($row->item->is_required)
+                                                    <span class="px-2 py-0.5 text-xs rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">Yes</span>
+                                                @else
+                                                    <span class="text-gray-500 dark:text-gray-400">Optional</span>
+                                                @endif
+                                            </td>
+                                            <td class="py-2 pr-4">
+                                                @if($row->submitted)
+                                                    <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Submitted</span>
+                                                @else
+                                                    <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">Remaining</span>
+                                                @endif
+                                            </td>
+                                            <td class="py-2">
+                                                @if($row->submitted && $row->document)
+                                                    @if($row->document->status === 'verified')
+                                                        <span class="text-green-600 dark:text-green-400">Verified</span>
+                                                    @elseif($row->document->status === 'pending')
+                                                        <span class="text-amber-600 dark:text-amber-400">Pending</span>
+                                                    @elseif($row->document->status === 'rejected')
+                                                        <span class="text-red-600 dark:text-red-400">Rejected</span>
+                                                    @endif
+                                                    <a href="{{ route('consultancy.documents.show', $row->document) }}" class="ml-1 text-blue-600 hover:text-blue-800 text-sm">View</a>
+                                                @else
+                                                    <span class="text-gray-500 dark:text-gray-400">—</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        @endif
+
+                        <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Uploaded documents</h4>
                         @if($student->documents->count())
                             <div class="space-y-3">
                                 @foreach($student->documents as $doc)
@@ -252,7 +309,7 @@
                                 @endforeach
                             </div>
                         @else
-                            <p class="text-gray-500 text-center py-4">No documents uploaded</p>
+                            <p class="text-gray-500 dark:text-gray-400 text-center py-4">No documents uploaded</p>
                         @endif
                     </div>
 

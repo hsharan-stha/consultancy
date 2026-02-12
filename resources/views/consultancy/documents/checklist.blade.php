@@ -13,10 +13,28 @@
     <div class="py-6">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             @if (session('success'))
-                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded dark:bg-green-900/30 dark:border-green-700 dark:text-green-200">
                     {{ session('success') }}
                 </div>
             @endif
+
+            <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">Document checklist is <strong>per country</strong>. Add items for a specific country or leave "Country" empty for items that apply to all countries. Students see only checklist items for their target country (plus global items).</p>
+
+            <!-- Filter by country -->
+            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-4 mb-6">
+                <form method="GET" action="{{ route('consultancy.documents.checklist') }}" class="flex flex-wrap items-end gap-3">
+                    <div>
+                        <label for="country_filter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Filter by country</label>
+                        <select name="country" id="country_filter" class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                            <option value="">All countries</option>
+                            @foreach($countries ?? [] as $c)
+                                <option value="{{ $c }}" {{ ($countryFilter ?? '') === $c ? 'selected' : '' }}>{{ $c }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <button type="submit" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm">Filter</button>
+                </form>
+            </div>
 
             <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6 mb-6">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Add New Checklist Item</h3>
@@ -33,6 +51,21 @@
                             <input type="text" name="document_type" id="document_type" required
                                 class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                         </div>
+                        <div>
+                            <label for="country_add" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Country</label>
+                            <select name="country" id="country_add" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                                <option value="">All countries (global)</option>
+                                @foreach($countries ?? [] as $c)
+                                    <option value="{{ $c }}">{{ $c }}</option>
+                                @endforeach
+                            </select>
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Leave empty for items that apply to every country.</p>
+                        </div>
+                        <div>
+                            <label for="applicable_for" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Applicable For</label>
+                            <input type="text" name="applicable_for" id="applicable_for" placeholder="e.g., Visa, University Application"
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                        </div>
                         <div class="md:col-span-2">
                             <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
                             <textarea name="description" id="description" rows="2"
@@ -44,11 +77,6 @@
                                     class="rounded border-gray-300 text-blue-600">
                                 <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Required</span>
                             </label>
-                        </div>
-                        <div>
-                            <label for="applicable_for" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Applicable For</label>
-                            <input type="text" name="applicable_for" id="applicable_for" placeholder="e.g., Visa, University Application"
-                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                         </div>
                     </div>
                     <div>
@@ -64,6 +92,7 @@
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead class="bg-gray-50 dark:bg-gray-700">
                         <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Country</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Type</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
@@ -74,6 +103,7 @@
                     <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         @forelse($checklist as $item)
                         <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ $item->country ?? 'All' }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ $item->name }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ $item->document_type }}</td>
                             <td class="px-6 py-4 text-sm text-gray-900 dark:text-white">{{ $item->description ?? '-' }}</td>
@@ -88,8 +118,8 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
-                                No checklist items found.
+                            <td colspan="6" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                                No checklist items found. {{ isset($countryFilter) && $countryFilter !== '' ? 'Try changing the country filter.' : '' }}
                             </td>
                         </tr>
                         @endforelse

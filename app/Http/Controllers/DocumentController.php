@@ -47,8 +47,11 @@ class DocumentController extends Controller
     {
         $students = Student::orderBy('first_name')->get();
         $selectedStudent = $request->student_id ? Student::find($request->student_id) : null;
-        $checklist = DocumentChecklist::orderBy('order')->get();
-        
+        $country = $selectedStudent && $selectedStudent->target_country
+            ? $selectedStudent->target_country
+            : null;
+        $checklist = DocumentChecklist::forCountry($country)->orderBy('order')->get();
+
         return view('consultancy.documents.create', compact('students', 'selectedStudent', 'checklist'));
     }
 
@@ -164,11 +167,21 @@ class DocumentController extends Controller
             ->with('success', 'Document deleted successfully!');
     }
 
-    // Document Checklist Management
-    public function checklist()
+    // Document Checklist Management (per country)
+    public function checklist(Request $request)
     {
-        $checklist = DocumentChecklist::orderBy('order')->get();
-        return view('consultancy.documents.checklist', compact('checklist'));
+        $countries = config('destinations.countries', ['Japan', 'Canada', 'USA', 'Australia', 'UK', 'Other']);
+        $countryFilter = $request->get('country');
+
+        $query = DocumentChecklist::query()->orderBy('country')->orderBy('order');
+        if ($countryFilter !== null && $countryFilter !== '') {
+            $query->where(function ($q) use ($countryFilter) {
+                $q->where('country', $countryFilter)->orWhereNull('country');
+            });
+        }
+        $checklist = $query->get();
+
+        return view('consultancy.documents.checklist', compact('checklist', 'countries', 'countryFilter'));
     }
 
     public function storeChecklist(Request $request)
@@ -179,11 +192,17 @@ class DocumentController extends Controller
             'description' => 'nullable|string',
             'is_required' => 'boolean',
             'applicable_for' => 'nullable|string|max:255',
+            'country' => 'nullable|string|max:255',
         ]);
 
         DocumentChecklist::create($validated);
 
-        return redirect()->route('consultancy.documents.checklist')
-            ->with('success', 'Checklist item added successfully!');
+        $redirect = redirect()->route('consultancy.documents.checklist');
+        if (!empty($validated['country'])) {
+            $redirect->with('success', 'Checklist item added for ' . $validated['country'] . '.');
+        } else {
+            $redirect->with('success', 'Checklist item added (applies to all countries).');
+        }
+        return $redirect;
     }
 }
