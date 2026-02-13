@@ -103,7 +103,7 @@ class TaskController extends Controller
             }
         }
 
-        return redirect()->route('consultancy.tasks.show', $task)
+        return redirect()->route('consultancy.students.show', $task->student)
             ->with('success', 'Task created successfully!');
     }
 
@@ -141,7 +141,7 @@ class TaskController extends Controller
 
         $task->update($validated);
 
-        return redirect()->route('consultancy.tasks.show', $task)
+        return redirect()->route('consultancy.students.show', $task->student)
             ->with('success', 'Task updated successfully!');
     }
 
@@ -158,8 +158,9 @@ class TaskController extends Controller
 
     public function destroy(Task $task)
     {
+        $studentId = $task->student_id;
         $task->delete();
-        return redirect()->route('consultancy.tasks.index')
+        return redirect()->route('consultancy.students.show', $studentId)
             ->with('success', 'Task deleted successfully!');
     }
 }

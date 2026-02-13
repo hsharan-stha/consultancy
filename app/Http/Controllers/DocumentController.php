@@ -136,7 +136,7 @@ class DocumentController extends Controller
             }
         }
 
-        return redirect()->back()
+        return redirect()->route('consultancy.students.show', $document->student)
             ->with('success', 'Document ' . $validated['status'] . ' successfully!');
     }
 

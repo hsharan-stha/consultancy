@@ -86,6 +86,23 @@ class ApplicationController extends Controller
             $student->update(['status' => 'applied']);
         }
 
+        // Sync target university/country and intake from application to student
+        try {
+            $university = University::find($application->university_id);
+            $toUpdate = [];
+            if ($university) {
+                $toUpdate['target_university_id'] = $application->university_id;
+                $toUpdate['target_country'] = $university->country;
+            }
+            if (!empty($application->intake)) {
+                $toUpdate['target_intake'] = $application->intake;
+            }
+            if (!empty($toUpdate) && $student) {
+                $student->update($toUpdate);
+            }
+        } catch (\Exception $e) {
+        }
+
         if ($student && $student->email) {
             try {
                 Mail::to($student->email)->send(new ApplicationCreatedMail($application));
@@ -93,7 +110,7 @@ class ApplicationController extends Controller
             }
         }
 
-        return redirect()->route('consultancy.applications.show', $application)
+        return redirect()->route('consultancy.students.show', $student)
             ->with('success', 'Application created successfully! ID: ' . $application->application_id);
     }
 
@@ -161,6 +178,7 @@ class ApplicationController extends Controller
         $oldCoeAppliedDate = $application->coe_applied_date;
         $oldCoeReceivedDate = $application->coe_received_date;
         $oldCounselorId = $application->counselor_id;
+        $oldUniversityId = $application->university_id;
 
         $student = $application->student;
         $validated = self::patchApplicationFromStudent($student, $validated);
@@ -172,6 +190,24 @@ class ApplicationController extends Controller
         $newCounselorId = $validated['counselor_id'] ?? null;
         if ($newCounselorId && $newCounselorId !== $oldCounselorId) {
             $student->update(['counselor_id' => $newCounselorId]);
+        }
+
+        // Sync university, target country and intake to student if university or intake is updated in application
+        $newUniversityId = $validated['university_id'] ?? null;
+        if ($newUniversityId && $newUniversityId !== $oldUniversityId) {
+            $university = University::find($newUniversityId);
+            if ($university) {
+                $student->update([
+                    'target_university_id' => $newUniversityId,
+                    'target_country' => $university->country
+                ]);
+            }
+        }
+
+        // Sync target intake from application to student when intake is updated
+        $newIntake = $validated['intake'] ?? null;
+        if ($newIntake && $newIntake !== $student->target_intake) {
+            $student->update(['target_intake' => $newIntake]);
         }
 
         // When status is set to documents_preparing, move student to document_collection step and create a task (from application section)
@@ -259,14 +295,15 @@ class ApplicationController extends Controller
         // Auto-update application status based on current data
         $application->updateStatusAutomatically();
 
-        return redirect()->route('consultancy.applications.show', $application)
+        return redirect()->route('consultancy.students.show', $application->student)
             ->with('success', 'Application updated successfully!');
     }
 
     public function destroy(Application $application)
     {
+        $studentId = $application->student_id;
         $application->delete();
-        return redirect()->route('consultancy.applications.index')
+        return redirect()->route('consultancy.students.show', $studentId)
             ->with('success', 'Application deleted successfully!');
     }
 

@@ -74,7 +74,7 @@ class VisaApplicationController extends Controller
             }
         }
 
-        return redirect()->route('consultancy.visa.show', $visaApplication)
+        return redirect()->route('consultancy.students.show', $student)
             ->with('success', 'Visa application created successfully! ID: ' . $visaApplication->visa_application_id);
     }
 
@@ -132,14 +132,15 @@ class VisaApplicationController extends Controller
             }
         }
 
-        return redirect()->route('consultancy.visa.show', $visa)
+        return redirect()->route('consultancy.students.show', $student)
             ->with('success', 'Visa application updated successfully!');
     }
 
     public function destroy(VisaApplication $visa)
     {
+        $studentId = $visa->student_id;
         $visa->delete();
-        return redirect()->route('consultancy.visa.index')
+        return redirect()->route('consultancy.students.show', $studentId)
             ->with('success', 'Visa application deleted successfully!');
     }
 }
