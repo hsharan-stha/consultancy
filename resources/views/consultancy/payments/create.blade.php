@@ -23,18 +23,6 @@
                                 @endforeach
                             </select>
                         </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Application (Optional)</label>
-                            <select name="application_id" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                                <option value="">Not linked to application</option>
-                                @foreach($applications as $app)
-                                    <option value="{{ $app->id }}" {{ old('application_id') == $app->id ? 'selected' : '' }}>
-                                        {{ $app->application_id }} - {{ $app->university->name ?? 'N/A' }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
 
                         <div class="grid grid-cols-2 gap-4">
                             <div>

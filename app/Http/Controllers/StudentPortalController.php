@@ -16,6 +16,7 @@ use App\Mail\DocumentReceivedMail;
 use App\Mail\CommunicationSentConsultancyMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 
 class StudentPortalController extends Controller
@@ -85,6 +86,31 @@ class StudentPortalController extends Controller
 
         return redirect()->route('portal.profile')
             ->with('success', 'Profile updated successfully!');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $student = $this->getAuthenticatedStudent();
+        if (!$student || !$student->user_id) {
+            return redirect()->route('home')->with('error', 'No student profile found.');
+        }
+
+        $validated = $request->validate([
+            'current_password' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+        ], [
+            'password.confirmed' => 'The new password confirmation does not match.',
+        ]);
+
+        $user = Auth::user();
+        if (!Hash::check($validated['current_password'], $user->password)) {
+            return redirect()->back()->withErrors(['current_password' => 'The current password is incorrect.'])->withInput();
+        }
+
+        $user->update(['password' => Hash::make($validated['password'])]);
+
+        return redirect()->route('portal.profile')
+            ->with('success', 'Password changed successfully!');
     }
 
     public function documents()

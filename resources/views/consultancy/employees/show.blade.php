@@ -185,6 +185,100 @@
                         @endif
                     </div>
 
+                    <!-- Employee Payments (Paid Detail) -->
+                    <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Payment History</h3>
+                        <form action="{{ route('consultancy.employees.payments.store', $employee) }}" method="POST" class="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                            @csrf
+                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Record payment</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Amount *</label>
+                                    <input type="number" name="amount" step="0.01" min="0" required value="{{ old('amount') }}"
+                                        class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm">
+                                    @error('amount')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Currency</label>
+                                    <select name="currency" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm">
+                                        <option value="NPR" {{ old('currency', 'NPR') == 'NPR' ? 'selected' : '' }}>NPR</option>
+                                        <option value="USD" {{ old('currency') == 'USD' ? 'selected' : '' }}>USD</option>
+                                        <option value="JPY" {{ old('currency') == 'JPY' ? 'selected' : '' }}>JPY</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Payment date *</label>
+                                    <input type="date" name="payment_date" required value="{{ old('payment_date', date('Y-m-d')) }}"
+                                        class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm">
+                                    @error('payment_date')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Payment method</label>
+                                    <select name="payment_method" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm">
+                                        <option value="">—</option>
+                                        <option value="Cash" {{ old('payment_method') == 'Cash' ? 'selected' : '' }}>Cash</option>
+                                        <option value="Bank Transfer" {{ old('payment_method') == 'Bank Transfer' ? 'selected' : '' }}>Bank Transfer</option>
+                                        <option value="eSewa" {{ old('payment_method') == 'eSewa' ? 'selected' : '' }}>eSewa</option>
+                                        <option value="Khalti" {{ old('payment_method') == 'Khalti' ? 'selected' : '' }}>Khalti</option>
+                                        <option value="Check" {{ old('payment_method') == 'Check' ? 'selected' : '' }}>Check</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Period (e.g. Jan 2025)</label>
+                                    <input type="text" name="period" value="{{ old('period') }}" placeholder="January 2025"
+                                        class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Transaction / Ref</label>
+                                    <input type="text" name="transaction_id" value="{{ old('transaction_id') }}"
+                                        class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Description / Notes</label>
+                                    <input type="text" name="description" value="{{ old('description') }}" placeholder="e.g. Salary January 2025"
+                                        class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm">
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <textarea name="notes" rows="2" placeholder="Notes (optional)"
+                                    class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm">{{ old('notes') }}</textarea>
+                            </div>
+                            <div class="mt-3">
+                                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm">Record Payment</button>
+                            </div>
+                        </form>
+                        @if($employee->payments->count())
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+                                    <thead class="bg-gray-50 dark:bg-gray-700">
+                                        <tr>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Date</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Amount</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Method</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Period</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Description</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Recorded by</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
+                                        @foreach($employee->payments as $payment)
+                                        <tr class="bg-white dark:bg-gray-800">
+                                            <td class="px-4 py-2 text-sm text-gray-900 dark:text-white">{{ $payment->payment_date->format('M d, Y') }}</td>
+                                            <td class="px-4 py-2 text-sm font-medium text-gray-900 dark:text-white">{{ $payment->currency }} {{ number_format($payment->amount, 2) }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-600 dark:text-gray-400">{{ $payment->payment_method ?? '—' }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-600 dark:text-gray-400">{{ $payment->period ?? '—' }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-600 dark:text-gray-400">{{ Str::limit($payment->description ?? $payment->notes ?? '—', 30) }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">{{ $payment->paidBy?->name ?? '—' }}</td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <p class="text-gray-500 dark:text-gray-400 text-center py-4">No payments recorded yet. Use the form above to record a payment.</p>
+                        @endif
+                    </div>
+
                     <!-- Assigned Communications -->
                     <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Communications Log</h3>

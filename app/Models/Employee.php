@@ -69,4 +69,9 @@ class Employee extends Model
     {
         return $this->hasMany(TeacherCourse::class, 'teacher_id');
     }
+
+    public function payments()
+    {
+        return $this->hasMany(EmployeePayment::class)->orderBy('payment_date', 'desc');
+    }
 }

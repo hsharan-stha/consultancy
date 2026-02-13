@@ -3,14 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\Counselor;
+use App\Models\Document;
+use App\Models\DocumentChecklist;
 use App\Models\Student;
 use App\Models\Application;
 use App\Models\Inquiry;
 use App\Models\Task;
 use App\Models\Communication;
+use App\Mail\CommunicationToStudentMail;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 
 class CounselorPortalController extends Controller
 {
@@ -102,8 +107,30 @@ class CounselorPortalController extends Controller
         if (!$counselor || $student->counselor_id !== $counselor->id) {
             abort(403, 'Unauthorized.');
         }
-        $student->load(['applications.university', 'documents', 'tasks']);
-        return view('counselor.students-show', compact('counselor', 'student'));
+        $student->load(['applications.university', 'documents', 'tasks', 'payments', 'communications' => fn($q) => $q->orderBy('created_at', 'desc')->limit(20)]);
+
+        $country = $student->target_country ?? null;
+        $documentChecklist = DocumentChecklist::forCountry($country)->orderBy('order')->get();
+        $requiredDocumentsStatus = $documentChecklist->map(function ($item) use ($student) {
+            $document = $student->documents()->where('document_type', $item->document_type)->orderBy('created_at', 'desc')->first();
+            return (object) [
+                'item' => $item,
+                'submitted' => $document !== null,
+                'document' => $document,
+            ];
+        });
+
+        return view('counselor.students-show', compact('counselor', 'student', 'requiredDocumentsStatus'));
+    }
+
+    public function showDocument(Document $document)
+    {
+        $counselor = $this->getAuthenticatedCounselor();
+        if (!$counselor || !$document->student || $document->student->counselor_id !== $counselor->id) {
+            abort(403, 'Unauthorized.');
+        }
+        $document->load(['student', 'verifiedBy']);
+        return view('counselor.documents-show', compact('document', 'counselor'));
     }
 
     public function applications()
@@ -207,7 +234,7 @@ class CounselorPortalController extends Controller
         if ($student->counselor_id !== $counselor->id) {
             abort(403, 'You can only send messages to your assigned students.');
         }
-        Communication::create([
+        $communication = Communication::create([
             'student_id' => $student->id,
             'user_id' => $counselor->user_id,
             'type' => 'note',
@@ -215,6 +242,16 @@ class CounselorPortalController extends Controller
             'subject' => $validated['subject'],
             'content' => $validated['content'],
         ]);
+
+        // Send email to student so they receive the message
+        if ($student->email) {
+            try {
+                Mail::to($student->email)->send(new CommunicationToStudentMail($communication));
+            } catch (\Exception $e) {
+                // Fail silently so message is still saved
+            }
+        }
+
         return redirect()->route('counselor.messages')->with('success', 'Message sent successfully.');
     }
 
@@ -255,5 +292,30 @@ class CounselorPortalController extends Controller
 
         return redirect()->route('counselor.profile')
             ->with('success', 'Profile updated successfully!');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $counselor = $this->getAuthenticatedCounselor();
+        if (!$counselor || !$counselor->user_id) {
+            return redirect()->route('home')->with('error', 'No counselor profile found.');
+        }
+
+        $validated = $request->validate([
+            'current_password' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+        ], [
+            'password.confirmed' => 'The new password confirmation does not match.',
+        ]);
+
+        $user = Auth::user();
+        if (!Hash::check($validated['current_password'], $user->password)) {
+            return redirect()->back()->withErrors(['current_password' => 'The current password is incorrect.'])->withInput();
+        }
+
+        $user->update(['password' => Hash::make($validated['password'])]);
+
+        return redirect()->route('counselor.profile')
+            ->with('success', 'Password changed successfully!');
     }
 }

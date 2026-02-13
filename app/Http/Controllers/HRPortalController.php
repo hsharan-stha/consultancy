@@ -96,6 +96,17 @@ class HRPortalController extends Controller
         return view('hr.attendance', compact('attendanceData', 'month', 'year'));
     }
 
+    public function payments()
+    {
+        $user = Auth::user();
+        $employee = Employee::where('user_id', $user->id)->first();
+        if (!$employee) {
+            return view('hr.payments', ['employee' => null, 'payments' => collect()]);
+        }
+        $payments = $employee->payments()->orderBy('payment_date', 'desc')->paginate(20);
+        return view('hr.payments', compact('employee', 'payments'));
+    }
+
     public function profile()
     {
         $user = Auth::user();

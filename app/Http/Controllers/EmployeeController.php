@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use App\Models\EmployeeAttendance;
+use App\Models\EmployeePayment;
+use App\Models\Role;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class EmployeeController extends Controller
 {
@@ -40,18 +43,20 @@ class EmployeeController extends Controller
 
     public function create()
     {
-        $users = User::whereDoesntHave('employee')->get();
-        return view('consultancy.employees.create', compact('users'));
+        $roles = Role::whereIn('role', ['Employee', 'Teacher', 'HR', 'Editor'])->orderBy('role')->get();
+        return view('consultancy.employees.create', compact('roles'));
     }
 
     public function store(Request $request)
     {
+        $roleIds = Role::whereIn('role', ['Employee', 'Teacher', 'HR', 'Editor'])->pluck('id')->toArray();
         $validated = $request->validate([
-            'user_id' => 'nullable|exists:users,id',
             'employee_id' => 'required|string|max:255|unique:employees,employee_id',
+            'role_id' => 'required|in:' . implode(',', $roleIds),
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:employees,email',
+            'email' => 'required|email|max:255|unique:employees,email|unique:users,email',
+            'password' => 'nullable|string|min:8|confirmed',
             'phone' => 'nullable|string|max:255',
             'date_of_birth' => 'nullable|date',
             'gender' => 'nullable|in:male,female,other',
@@ -66,6 +71,17 @@ class EmployeeController extends Controller
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
+        $password = $request->filled('password') ? $request->input('password') : 'password';
+        $user = User::create([
+            'name' => trim($validated['first_name'] . ' ' . $validated['last_name']),
+            'email' => $validated['email'],
+            'password' => Hash::make($password),
+            'role_id' => $validated['role_id'],
+            'email_verified_at' => now(),
+        ]);
+        $validated['user_id'] = $user->id;
+        unset($validated['role_id']);
+
         // Handle photo upload
         if ($request->hasFile('photo')) {
             $photo = $request->file('photo');
@@ -76,16 +92,26 @@ class EmployeeController extends Controller
 
         Employee::create($validated);
 
+        $message = 'Employee created successfully!';
+        if (!$request->filled('password')) {
+            $message .= ' A login account was created with default password: password';
+        }
+
         return redirect()->route('consultancy.employees.index')
-            ->with('success', 'Employee created successfully!');
+            ->with('success', $message);
     }
 
     public function show(Employee $employee)
     {
-        $employee->load(['user', 'courses', 'attendances' => function($query) {
-            $query->orderBy('date', 'desc')->limit(30);
-        }]);
-        
+        $employee->load([
+            'user',
+            'courses',
+            'payments' => fn($q) => $q->with('paidBy')->orderBy('payment_date', 'desc')->limit(50),
+            'attendances' => function($query) {
+                $query->orderBy('date', 'desc')->limit(30);
+            },
+        ]);
+
         // Load tasks assigned to this employee's user
         $assignedTasks = [];
         $assignedCommunications = [];
@@ -100,24 +126,48 @@ class EmployeeController extends Controller
                 ->limit(10)
                 ->get();
         }
-        
+
         $todayAttendance = $employee->attendances()->whereDate('date', today())->first();
         $thisMonthStats = $this->getMonthlyStats($employee);
 
         return view('consultancy.employees.show', compact('employee', 'todayAttendance', 'thisMonthStats', 'assignedTasks', 'assignedCommunications'));
     }
 
+    public function storePayment(Request $request, Employee $employee)
+    {
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:0',
+            'currency' => 'nullable|string|max:3',
+            'payment_date' => 'required|date',
+            'payment_method' => 'nullable|string|max:255',
+            'transaction_id' => 'nullable|string|max:255',
+            'period' => 'nullable|string|max:100',
+            'description' => 'nullable|string|max:500',
+            'notes' => 'nullable|string',
+        ]);
+
+        $validated['employee_id'] = $employee->id;
+        $validated['currency'] = $validated['currency'] ?? 'NPR';
+        $validated['paid_by'] = auth()->id();
+
+        EmployeePayment::create($validated);
+
+        return redirect()->route('consultancy.employees.show', $employee)
+            ->with('success', 'Payment recorded successfully.');
+    }
+
     public function edit(Employee $employee)
     {
-        $users = User::whereDoesntHave('employee')->orWhere('id', $employee->user_id)->get();
-        return view('consultancy.employees.edit', compact('employee', 'users'));
+        $roles = Role::whereIn('role', ['Employee', 'Teacher', 'HR', 'Editor'])->orderBy('role')->get();
+        return view('consultancy.employees.edit', compact('employee', 'roles'));
     }
 
     public function update(Request $request, Employee $employee)
     {
+        $roleIds = Role::whereIn('role', ['Employee', 'Teacher', 'HR', 'Editor'])->pluck('id')->toArray();
         $validated = $request->validate([
-            'user_id' => 'nullable|exists:users,id',
             'employee_id' => 'required|string|max:255|unique:employees,employee_id,' . $employee->id,
+            'role_id' => 'required|in:' . implode(',', $roleIds),
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:employees,email,' . $employee->id,
@@ -147,6 +197,10 @@ class EmployeeController extends Controller
             $validated['photo'] = 'employees/' . $photoName;
         }
 
+        if ($employee->user_id && isset($validated['role_id'])) {
+            User::where('id', $employee->user_id)->update(['role_id' => $validated['role_id']]);
+        }
+        unset($validated['role_id']);
         $employee->update($validated);
 
         return redirect()->route('consultancy.employees.index')

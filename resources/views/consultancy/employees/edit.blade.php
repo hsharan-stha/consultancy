@@ -22,15 +22,13 @@
                                 class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Link User Account (Optional)</label>
-                            <select name="user_id" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                                <option value="">No User Account</option>
-                                @foreach($users as $user)
-                                    <option value="{{ $user->id }}" {{ old('user_id', $employee->user_id) == $user->id ? 'selected' : '' }}>
-                                        {{ $user->name }} ({{ $user->email }})
-                                    </option>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Role *</label>
+                            <select name="role_id" required class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                                @foreach($roles as $role)
+                                    <option value="{{ $role->id }}" {{ old('role_id', $employee->user?->role_id ?? $roles->first()?->id) == $role->id ? 'selected' : '' }}>{{ $role->role }}</option>
                                 @endforeach
                             </select>
+                            <p class="text-xs text-gray-500 mt-1">Login account role (only applies if employee has a linked account)</p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">First Name *</label>

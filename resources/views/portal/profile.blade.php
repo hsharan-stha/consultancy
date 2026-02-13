@@ -108,6 +108,33 @@
                             <x-primary-button>{{ __('Update Profile') }}</x-primary-button>
                         </div>
                     </form>
+
+                    <!-- Change Password -->
+                    <div class="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ __('Change Password') }}</h3>
+                        <form action="{{ route('portal.password.update') }}" method="POST" class="space-y-4">
+                            @csrf
+                            @method('PUT')
+                            <div>
+                                <x-input-label for="current_password" :value="__('Current Password')" />
+                                <x-text-input id="current_password" name="current_password" type="password" class="mt-1 block w-full" required autocomplete="current-password" />
+                                <x-input-error :messages="$errors->get('current_password')" class="mt-2" />
+                            </div>
+                            <div>
+                                <x-input-label for="password" :value="__('New Password')" />
+                                <x-text-input id="password" name="password" type="password" class="mt-1 block w-full" required minlength="8" autocomplete="new-password" />
+                                <x-input-error :messages="$errors->get('password')" class="mt-2" />
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ __('At least 8 characters.') }}</p>
+                            </div>
+                            <div>
+                                <x-input-label for="password_confirmation" :value="__('Confirm New Password')" />
+                                <x-text-input id="password_confirmation" name="password_confirmation" type="password" class="mt-1 block w-full" required minlength="8" autocomplete="new-password" />
+                            </div>
+                            <div class="flex items-center justify-end">
+                                <x-primary-button type="submit">{{ __('Change Password') }}</x-primary-button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>

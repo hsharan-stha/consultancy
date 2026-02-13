@@ -7,9 +7,10 @@ use App\Models\Course;
 use App\Models\TeacherCourse;
 use App\Models\TeacherDailyLog;
 use App\Models\EmployeeAttendance;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Hash;
 
 class TeacherPortalController extends Controller
 {
@@ -298,16 +299,19 @@ class TeacherPortalController extends Controller
             ];
         }
 
-        // Get payment history (if you have a teacher_payments table, use that)
-        // For now, we'll show calculated earnings
+        // Recorded payments (employee_payments) for this teacher
+        $recordedPayments = $teacher->payments()->orderBy('payment_date', 'desc')->get();
+        $totalRecorded = $recordedPayments->sum('amount');
 
         return view('teacher.payments', compact(
-            'teacher', 
-            'courseEarnings', 
-            'totalEarnings', 
-            'month', 
+            'teacher',
+            'courseEarnings',
+            'totalEarnings',
+            'month',
             'year',
-            'attendances'
+            'attendances',
+            'recordedPayments',
+            'totalRecorded'
         ));
     }
 
@@ -331,6 +335,31 @@ class TeacherPortalController extends Controller
 
         return redirect()->route('teacher.profile')
             ->with('success', 'Profile updated successfully!');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $teacher = $this->getAuthenticatedTeacher();
+        if (!$teacher || !$teacher->user_id) {
+            return redirect()->route('home')->with('error', 'No teacher profile found.');
+        }
+
+        $validated = $request->validate([
+            'current_password' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+        ], [
+            'password.confirmed' => 'The new password confirmation does not match.',
+        ]);
+
+        $user = Auth::user();
+        if (!Hash::check($validated['current_password'], $user->password)) {
+            return redirect()->back()->withErrors(['current_password' => 'The current password is incorrect.'])->withInput();
+        }
+
+        $user->update(['password' => Hash::make($validated['password'])]);
+
+        return redirect()->route('teacher.profile')
+            ->with('success', 'Password changed successfully!');
     }
 
     private function getAuthenticatedTeacher()

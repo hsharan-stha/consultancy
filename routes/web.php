@@ -3,7 +3,6 @@
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\UserController;
 
 // Consultancy Controllers
 use App\Http\Controllers\StudentController;
@@ -57,10 +56,6 @@ Route::middleware(['auth', 'verified', 'role:1,2'])->group(function () {
 
     // Redirect basic dashboard to consultancy dashboard
     Route::get('/dashboard', fn() => redirect()->route('consultancy.dashboard'))->name('dashboard');
-});
-
-Route::middleware(['auth', 'verified', 'role:1'])->group(function () {
-    Route::resource('users', UserController::class);
 });
 
 // Admin University Management (separate prefix to avoid conflict with public routes)
@@ -135,6 +130,7 @@ Route::middleware(['auth', 'verified', 'role:1,2'])->prefix('consultancy')->name
     Route::resource('employees', EmployeeController::class);
     Route::post('employees/{employee}/check-in', [EmployeeController::class, 'checkIn'])->name('employees.check-in');
     Route::post('employees/{employee}/check-out', [EmployeeController::class, 'checkOut'])->name('employees.check-out');
+    Route::post('employees/{employee}/payments', [EmployeeController::class, 'storePayment'])->name('employees.payments.store');
     Route::get('employees/{employee}/attendance', [EmployeeController::class, 'attendance'])->name('employees.attendance');
     Route::put('employees/{employee}/attendance/{attendance}/checkout', [EmployeeController::class, 'updateAttendanceCheckout'])->name('employees.attendance.update-checkout');
 });
@@ -144,6 +140,7 @@ Route::middleware(['auth', 'verified'])->prefix('portal')->name('portal.')->grou
     Route::get('/dashboard', [StudentPortalController::class, 'dashboard'])->name('dashboard');
     Route::get('/profile', [StudentPortalController::class, 'profile'])->name('profile');
     Route::put('/profile', [StudentPortalController::class, 'updateProfile'])->name('profile.update');
+    Route::put('/password', [StudentPortalController::class, 'updatePassword'])->name('password.update');
     Route::get('/documents', [StudentPortalController::class, 'documents'])->name('documents');
     Route::post('/documents', [StudentPortalController::class, 'uploadDocument'])->name('documents.upload');
     Route::get('/applications', [StudentPortalController::class, 'applications'])->name('applications');
@@ -175,10 +172,12 @@ Route::middleware(['auth', 'verified', 'role:3'])->prefix('editor')->name('edito
 Route::middleware(['auth', 'verified', 'role:5'])->prefix('employee')->name('employee.')->group(function () {
     Route::get('/dashboard', [EmployeePortalController::class, 'dashboard'])->name('dashboard');
     Route::get('/attendance', [EmployeePortalController::class, 'attendance'])->name('attendance');
+    Route::get('/payments', [EmployeePortalController::class, 'payments'])->name('payments');
     Route::post('/check-in', [EmployeePortalController::class, 'checkIn'])->name('check-in');
     Route::post('/check-out', [EmployeePortalController::class, 'checkOut'])->name('check-out');
     Route::get('/profile', [EmployeePortalController::class, 'profile'])->name('profile');
     Route::put('/profile', [EmployeePortalController::class, 'updateProfile'])->name('profile.update');
+    Route::put('/password', [EmployeePortalController::class, 'updatePassword'])->name('password.update');
 });
 
 // Teacher Portal Routes (Role: 6 - Teacher)
@@ -194,6 +193,7 @@ Route::middleware(['auth', 'verified', 'role:6'])->prefix('teacher')->name('teac
     Route::get('/payments', [TeacherPortalController::class, 'payments'])->name('payments');
     Route::get('/profile', [TeacherPortalController::class, 'profile'])->name('profile');
     Route::put('/profile', [TeacherPortalController::class, 'updateProfile'])->name('profile.update');
+    Route::put('/password', [TeacherPortalController::class, 'updatePassword'])->name('password.update');
 });
 
 // HR Portal Routes (Role: 7 - HR)
@@ -201,6 +201,7 @@ Route::middleware(['auth', 'verified', 'role:7'])->prefix('hr')->name('hr.')->gr
     Route::get('/dashboard', [HRPortalController::class, 'dashboard'])->name('dashboard');
     Route::get('/employees', [HRPortalController::class, 'employees'])->name('employees');
     Route::get('/attendance', [HRPortalController::class, 'attendance'])->name('attendance');
+    Route::get('/payments', [HRPortalController::class, 'payments'])->name('payments');
     Route::get('/profile', [HRPortalController::class, 'profile'])->name('profile');
     Route::put('/profile', [HRPortalController::class, 'updateProfile'])->name('profile.update');
 });
@@ -210,6 +211,7 @@ Route::middleware(['auth', 'verified', 'role:8'])->prefix('counselor')->name('co
     Route::get('/dashboard', [CounselorPortalController::class, 'dashboard'])->name('dashboard');
     Route::get('/students', [CounselorPortalController::class, 'students'])->name('students');
     Route::get('/students/{student}', [CounselorPortalController::class, 'showStudent'])->name('students.show');
+    Route::get('/documents/{document}', [CounselorPortalController::class, 'showDocument'])->name('documents.show');
     Route::get('/applications', [CounselorPortalController::class, 'applications'])->name('applications');
     Route::get('/applications/{application}', [CounselorPortalController::class, 'showApplication'])->name('applications.show');
     Route::patch('/applications/{application}/status', [CounselorPortalController::class, 'updateApplicationStatus'])->name('applications.update-status');
@@ -219,6 +221,7 @@ Route::middleware(['auth', 'verified', 'role:8'])->prefix('counselor')->name('co
     Route::post('/messages', [CounselorPortalController::class, 'sendMessage'])->name('messages.send');
     Route::get('/profile', [CounselorPortalController::class, 'profile'])->name('profile');
     Route::put('/profile', [CounselorPortalController::class, 'updateProfile'])->name('profile.update');
+    Route::put('/password', [CounselorPortalController::class, 'updatePassword'])->name('password.update');
 });
 
 // Public University Routes

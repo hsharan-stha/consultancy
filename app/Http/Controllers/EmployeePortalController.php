@@ -4,9 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use App\Models\EmployeeAttendance;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Hash;
 
 class EmployeePortalController extends Controller
 {
@@ -67,6 +68,16 @@ class EmployeePortalController extends Controller
         $todayAttendance = $employee->attendances()->whereDate('date', Carbon::today())->first();
 
         return view('employee.dashboard', compact('employee', 'stats', 'recentAttendance', 'monthlyAttendance', 'todayAttendance'));
+    }
+
+    public function payments()
+    {
+        $employee = $this->getAuthenticatedEmployee();
+        if (!$employee) {
+            return redirect()->route('home')->with('error', 'No employee profile found.');
+        }
+        $payments = $employee->payments()->orderBy('payment_date', 'desc')->paginate(20);
+        return view('employee.payments', compact('employee', 'payments'));
     }
 
     public function attendance()
@@ -185,5 +196,30 @@ class EmployeePortalController extends Controller
 
         return redirect()->route('employee.profile')
             ->with('success', 'Profile updated successfully!');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $employee = $this->getAuthenticatedEmployee();
+        if (!$employee || !$employee->user_id) {
+            return redirect()->route('home')->with('error', 'No employee profile found.');
+        }
+
+        $validated = $request->validate([
+            'current_password' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+        ], [
+            'password.confirmed' => 'The new password confirmation does not match.',
+        ]);
+
+        $user = Auth::user();
+        if (!Hash::check($validated['current_password'], $user->password)) {
+            return redirect()->back()->withErrors(['current_password' => 'The current password is incorrect.'])->withInput();
+        }
+
+        $user->update(['password' => Hash::make($validated['password'])]);
+
+        return redirect()->route('employee.profile')
+            ->with('success', 'Password changed successfully!');
     }
 }

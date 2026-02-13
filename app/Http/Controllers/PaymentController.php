@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Payment;
 use App\Models\Student;
-use App\Models\Application;
 use App\Mail\PaymentDoneMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -43,16 +42,14 @@ class PaymentController extends Controller
     {
         $students = Student::orderBy('first_name')->get();
         $selectedStudent = $request->student_id ? Student::find($request->student_id) : null;
-        $applications = $selectedStudent ? $selectedStudent->applications : collect();
-        
-        return view('consultancy.payments.create', compact('students', 'selectedStudent', 'applications'));
+
+        return view('consultancy.payments.create', compact('students', 'selectedStudent'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
             'student_id' => 'required|exists:students,id',
-            'application_id' => 'nullable|exists:applications,id',
             'payment_type' => 'required|string|max:255',
             'description' => 'required|string|max:500',
             'amount' => 'required|numeric|min:0',
@@ -105,10 +102,7 @@ class PaymentController extends Controller
 
     public function edit(Payment $payment)
     {
-        $students = Student::orderBy('first_name')->get();
-        $applications = $payment->student ? $payment->student->applications : collect();
-        
-        return view('consultancy.payments.edit', compact('payment', 'students', 'applications'));
+        return view('consultancy.payments.edit', compact('payment'));
     }
 
     public function update(Request $request, Payment $payment)

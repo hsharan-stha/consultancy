@@ -44,6 +44,41 @@
                     </div>
                 </form>
             </div>
+
+            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6 mt-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ __('Change Password') }}</h3>
+                <form action="{{ route('employee.password.update') }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('Current Password') }} *</label>
+                            <input type="password" name="current_password" required autocomplete="current-password"
+                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white @error('current_password') border-red-500 @enderror">
+                            @error('current_password')
+                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('New Password') }} *</label>
+                            <input type="password" name="password" required minlength="8" autocomplete="new-password"
+                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white @error('password') border-red-500 @enderror">
+                            @error('password')
+                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                            <p class="text-xs text-gray-500 mt-1">{{ __('At least 8 characters.') }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('Confirm New Password') }} *</label>
+                            <input type="password" name="password_confirmation" required minlength="8" autocomplete="new-password"
+                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg">{{ __('Change Password') }}</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </x-app-layout>
