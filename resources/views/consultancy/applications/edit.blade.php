@@ -46,6 +46,15 @@
                             </select>
                         </div>
                         <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assigned Counselor</label>
+                            <select name="counselor_id" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                                <option value="">Select Counselor</option>
+                                @foreach($counselors as $counselor)
+                                    <option value="{{ $counselor->id }}" {{ old('counselor_id', $application->counselor_id) == $counselor->id ? 'selected' : '' }}>{{ $counselor->user->name ?? 'N/A' }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Intake *</label>
                             <input type="text" name="intake" value="{{ old('intake', $application->intake ?? $application->student?->target_intake) }}" required
                                 class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">

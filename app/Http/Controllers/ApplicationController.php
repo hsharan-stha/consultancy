@@ -160,12 +160,19 @@ class ApplicationController extends Controller
         $oldCoeStatus = $application->coe_status;
         $oldCoeAppliedDate = $application->coe_applied_date;
         $oldCoeReceivedDate = $application->coe_received_date;
+        $oldCounselorId = $application->counselor_id;
 
         $student = $application->student;
         $validated = self::patchApplicationFromStudent($student, $validated);
 
         $application->update($validated);
         $application->load(['student', 'university']);
+
+        // Sync counselor assignment to student if counselor is updated in application
+        $newCounselorId = $validated['counselor_id'] ?? null;
+        if ($newCounselorId && $newCounselorId !== $oldCounselorId) {
+            $student->update(['counselor_id' => $newCounselorId]);
+        }
 
         // When status is set to documents_preparing, move student to document_collection step and create a task (from application section)
         $student = $application->student;
