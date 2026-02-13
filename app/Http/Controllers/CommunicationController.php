@@ -75,18 +75,41 @@ class CommunicationController extends Controller
         $validated['user_id'] = auth()->id();
 
         $communication = Communication::create($validated);
+        $student = Student::find($validated['student_id']);
 
-        if ($validated['type'] === 'email' && $validated['direction'] === 'outgoing') {
-            $student = Student::find($validated['student_id']);
-            $toEmail = $validated['email_to'] ?? ($student->email ?? null);
-            if ($toEmail) {
+        // Check which recipients to send emails to
+        $sendToStudent = $request->has('send_to_student') && $request->send_to_student;
+        $sendToCounselor = $request->has('send_to_counselor') && $request->send_to_counselor;
+        $sendToConsultancy = $request->has('send_to_consultancy') && $request->send_to_consultancy;
+
+        // Send to student
+        if ($sendToStudent && $student->email) {
+            try {
+                Mail::to($student->email)->send(new CommunicationToStudentMail($communication));
+            } catch (\Exception $e) {
+            }
+        }
+
+        // Send to counselor
+        if ($sendToCounselor && $student->counselor && $student->counselor->user && $student->counselor->user->email) {
+            try {
+                Mail::to($student->counselor->user->email)->send(new CommunicationToStudentMail($communication));
+            } catch (\Exception $e) {
+            }
+        }
+
+        // Send to consultancy
+        if ($sendToConsultancy) {
+            $profile = ConsultancyProfile::where('is_active', true)->first();
+            if ($profile && $profile->email) {
                 try {
-                    Mail::to($toEmail)->send(new CommunicationToStudentMail($communication));
+                    Mail::to($profile->email)->send(new CommunicationSentConsultancyMail($communication));
                 } catch (\Exception $e) {
                 }
             }
         }
 
+        // Also send to consultancy by default (legacy behavior for record keeping)
         $profile = ConsultancyProfile::where('is_active', true)->first();
         if ($profile && $profile->email) {
             try {

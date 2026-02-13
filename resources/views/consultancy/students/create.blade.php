@@ -27,13 +27,17 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">First Name *</label>
-                            <input type="text" name="first_name" value="{{ old('first_name') }}" required
-                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                            <input type="text" name="first_name" value="{{ old('first_name') }}" required minlength="2" maxlength="50"
+                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white validation-input"
+                                data-validation="nonempty">
+                            <span class="error-message text-red-500 text-xs mt-1 hidden"></span>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Last Name *</label>
-                            <input type="text" name="last_name" value="{{ old('last_name') }}" required
-                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                            <input type="text" name="last_name" value="{{ old('last_name') }}" required minlength="2" maxlength="50"
+                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white validation-input"
+                                data-validation="nonempty">
+                            <span class="error-message text-red-500 text-xs mt-1 hidden"></span>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Gender</label>
@@ -60,16 +64,6 @@
                                 class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name (local / alternate)</label>
-                            <input type="text" name="first_name_japanese" value="{{ old('first_name_japanese') }}" placeholder="First name in local script"
-                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name (local) – Last</label>
-                            <input type="text" name="last_name_japanese" value="{{ old('last_name_japanese') }}" placeholder="Last name in local script"
-                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                        </div>
-                        <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Photo</label>
                             <input type="file" name="photo" accept="image/*"
                                 class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
@@ -85,27 +79,38 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email *</label>
                             <input type="email" name="email" value="{{ old('email') }}" required
-                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white validation-input"
+                                data-validation="email">
+                            <span class="error-message text-red-500 text-xs mt-1 hidden"></span>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone *</label>
-                            <input type="text" name="phone" value="{{ old('phone') }}" required
-                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                            <input type="tel" name="phone" value="{{ old('phone') }}" required pattern="[0-9+\-\s()]{7,}"
+                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white validation-input"
+                                data-validation="phone"
+                                placeholder="e.g. +977-1234567">
+                            <span class="error-message text-red-500 text-xs mt-1 hidden"></span>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">WhatsApp</label>
-                            <input type="text" name="whatsapp" value="{{ old('whatsapp') }}"
-                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                            <input type="text" name="whatsapp" value="{{ old('whatsapp') }}" minlength="2" maxlength="50"
+                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white validation-input"
+                                data-validation="nonempty">
+                            <span class="error-message text-red-500 text-xs mt-1 hidden"></span>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">City *</label>
-                            <input type="text" name="city" value="{{ old('city') }}" required
-                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                            <input type="text" name="city" value="{{ old('city') }}" required minlength="2" maxlength="50"
+                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white validation-input"
+                                data-validation="nonempty">
+                            <span class="error-message text-red-500 text-xs mt-1 hidden"></span>
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Address *</label>
-                            <textarea name="address" rows="2" required
-                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">{{ old('address') }}</textarea>
+                            <textarea name="address" rows="2" required minlength="5" maxlength="250"
+                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white validation-input"
+                                data-validation="nonempty">{{ old('address') }}</textarea>
+                            <span class="error-message text-red-500 text-xs mt-1 hidden"></span>
                         </div>
                     </div>
                 </div>
@@ -119,15 +124,21 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password (Optional)</label>
                             <input type="password" name="password" 
-                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                placeholder="Leave blank for default: password">
+                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white validation-input"
+                                data-validation="password"
+                                placeholder="Leave blank for default: password"
+                                minlength="8" maxlength="50">
                             <p class="text-xs text-gray-500 mt-1">Minimum 8 characters. If blank, default password will be used.</p>
+                            <span class="error-message text-red-500 text-xs mt-1 hidden"></span>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirm Password</label>
                             <input type="password" name="password_confirmation" 
-                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                placeholder="Confirm password">
+                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white validation-input"
+                                data-validation="confirm"
+                                placeholder="Confirm password"
+                                minlength="8" maxlength="50">
+                            <span class="error-message text-red-500 text-xs mt-1 hidden"></span>
                         </div>
                     </div>
                 </div>
@@ -199,67 +210,6 @@
                     </div>
                 </div>
 
-                <!-- Target & Assignment -->
-                <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Target & Assignment</h3>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Target Country</label>
-                            <select name="target_country" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                                <option value="">Select</option>
-                                @foreach(config('destinations.countries', []) as $c)
-                                    <option value="{{ $c }}" {{ old('target_country') == $c ? 'selected' : '' }}>{{ $c }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Target Intake</label>
-                            <input type="text" name="target_intake" value="{{ old('target_intake') }}" placeholder="e.g. April 2026, September 2026"
-                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Course Type</label>
-                            <select name="target_course_type" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                                <option value="">Select</option>
-                                <option value="Language School" {{ old('target_course_type') == 'Language School' ? 'selected' : '' }}>Language School</option>
-                                <option value="University" {{ old('target_course_type') == 'University' ? 'selected' : '' }}>University</option>
-                                <option value="Vocational" {{ old('target_course_type') == 'Vocational' ? 'selected' : '' }}>Vocational School</option>
-                                <option value="Graduate School" {{ old('target_course_type') == 'Graduate School' ? 'selected' : '' }}>Graduate School</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Target University</label>
-                            <select name="target_university_id" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                                <option value="">Select University</option>
-                                @foreach($universities as $university)
-                                    <option value="{{ $university->id }}" {{ old('target_university_id') == $university->id ? 'selected' : '' }}>{{ $university->name }}@if($university->country) ({{ $university->country }})@endif</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assign Counselor</label>
-                            <select name="counselor_id" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                                <option value="">Select Counselor</option>
-                                @foreach($counselors as $counselor)
-                                    <option value="{{ $counselor->id }}" {{ old('counselor_id') == $counselor->id ? 'selected' : '' }}>{{ $counselor->user->name ?? 'N/A' }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Source</label>
-                            <select name="source" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                                <option value="">Select</option>
-                                <option value="Walk-in" {{ old('source') == 'Walk-in' ? 'selected' : '' }}>Walk-in</option>
-                                <option value="Referral" {{ old('source') == 'Referral' ? 'selected' : '' }}>Referral</option>
-                                <option value="Social Media" {{ old('source') == 'Social Media' ? 'selected' : '' }}>Social Media</option>
-                                <option value="Website" {{ old('source') == 'Website' ? 'selected' : '' }}>Website</option>
-                                <option value="Agent" {{ old('source') == 'Agent' ? 'selected' : '' }}>Agent</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="flex justify-end space-x-4">
                     <a href="{{ route('consultancy.students.index') }}" class="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg">Cancel</a>
                     <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">Register Student</button>
@@ -267,4 +217,143 @@
             </form>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            setupValidation();
+        });
+
+        function setupValidation() {
+            const form = document.querySelector('form');
+            const inputs = form.querySelectorAll('.validation-input');
+
+            inputs.forEach(input => {
+                input.addEventListener('blur', () => validateField(input));
+                input.addEventListener('input', () => validateField(input));
+                input.addEventListener('change', () => validateField(input));
+            });
+
+            form.addEventListener('submit', function(e) {
+                let isFormValid = true;
+                inputs.forEach(input => {
+                    if (!validateField(input)) {
+                        isFormValid = false;
+                    }
+                });
+
+                if (!isFormValid) {
+                    e.preventDefault();
+                    alert('Please fix the errors before submitting.');
+                }
+            });
+        }
+
+        function validateField(field) {
+            const errorSpan = field.nextElementSibling;
+            if (!errorSpan || !errorSpan.classList.contains('error-message')) {
+                return true;
+            }
+
+            let isValid = true;
+            let errorMsg = '';
+            const fieldName = field.name;
+            const value = field.value.trim();
+            const validationType = field.dataset.validation;
+
+            // Check required
+            if (field.hasAttribute('required') && !value) {
+                isValid = false;
+                errorMsg = 'This field is required';
+            } 
+            // Validate based on type/custom validation
+            else if (value) {
+                switch(validationType || field.type) {
+                    case 'email':
+                        if (!isValidEmail(value)) {
+                            isValid = false;
+                            errorMsg = 'Please enter a valid email address';
+                        }
+                        break;
+                    case 'phone':
+                        if (!isValidPhone(value)) {
+                            isValid = false;
+                            errorMsg = 'Please enter a valid phone number (minimum 7 digits)';
+                        }
+                        break;
+                    case 'password':
+                        if (value && value.length < 8) {
+                            isValid = false;
+                            errorMsg = 'Password must be at least 8 characters';
+                        }
+                        break;
+                    case 'confirm':
+                        const password = document.querySelector('input[name="password"]');
+                        if (value && password.value && value !== password.value) {
+                            isValid = false;
+                            errorMsg = 'Passwords do not match';
+                        }
+                        break;
+                    case 'nonempty':
+                        if (!value) {
+                            isValid = false;
+                            errorMsg = 'This field is required';
+                        }
+                        break;
+                }
+
+                // Check minlength
+                if (isValid && field.hasAttribute('minlength')) {
+                    const minLength = parseInt(field.getAttribute('minlength'));
+                    if (value && value.length < minLength) {
+                        isValid = false;
+                        errorMsg = `Minimum ${minLength} characters required`;
+                    }
+                }
+
+                // Check maxlength
+                if (isValid && field.hasAttribute('maxlength')) {
+                    const maxLength = parseInt(field.getAttribute('maxlength'));
+                    if (value && value.length > maxLength) {
+                        isValid = false;
+                        errorMsg = `Maximum ${maxLength} characters allowed`;
+                    }
+                }
+
+                // Check pattern
+                if (isValid && field.hasAttribute('pattern') && value) {
+                    const pattern = new RegExp(field.getAttribute('pattern'));
+                    if (!pattern.test(value)) {
+                        isValid = false;
+                        errorMsg = 'Please enter a valid value';
+                    }
+                }
+            }
+
+            // Update UI
+            if (isValid) {
+                field.classList.remove('border-red-500', 'bg-red-50');
+                field.classList.add('border-green-500', 'bg-green-50');
+                errorSpan.textContent = '';
+                errorSpan.classList.add('hidden');
+            } else {
+                field.classList.remove('border-green-500', 'bg-green-50');
+                field.classList.add('border-red-500', 'bg-red-50');
+                errorSpan.textContent = errorMsg;
+                errorSpan.classList.remove('hidden');
+            }
+
+            return isValid;
+        }
+
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        function isValidPhone(phone) {
+            // Remove spaces, dashes, parentheses and + for counting digits
+            const digitsOnly = phone.replace(/[\s\-()]/g, '').replace(/^\+/, '');
+            return digitsOnly.length >= 7;
+        }
+    </script>
 </x-app-layout>

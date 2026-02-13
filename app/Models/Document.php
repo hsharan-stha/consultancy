@@ -20,6 +20,20 @@ class Document extends Model
         'verified_at' => 'datetime',
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        // When a document is created or updated, update all related applications' status
+        static::saved(function ($document) {
+            if ($document->student) {
+                $document->student->applications()->each(function ($application) {
+                    $application->updateStatusAutomatically();
+                });
+            }
+        });
+    }
+
     public function student()
     {
         return $this->belongsTo(Student::class);

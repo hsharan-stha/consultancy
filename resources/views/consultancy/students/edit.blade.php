@@ -61,16 +61,6 @@
                                 class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name (local / alternate)</label>
-                            <input type="text" name="first_name_japanese" value="{{ old('first_name_japanese', $student->first_name_japanese) }}" placeholder="First name in local script"
-                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name (local) – Last</label>
-                            <input type="text" name="last_name_japanese" value="{{ old('last_name_japanese', $student->last_name_japanese) }}" placeholder="Last name in local script"
-                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                        </div>
-                        <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status *</label>
                             <select name="status" required class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                                 @foreach(['inquiry', 'registered', 'documents_pending', 'documents_submitted', 'applied', 'interview_scheduled', 'accepted', 'visa_processing', 'visa_approved', 'visa_rejected', 'departed', 'enrolled', 'completed', 'cancelled'] as $status)
@@ -168,45 +158,7 @@
                     </div>
                 </div>
 
-                <!-- Target & Assignment -->
-                <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Target & Assignment</h3>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Target Country</label>
-                            <select name="target_country" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                                <option value="">Select</option>
-                                @foreach(config('destinations.countries', []) as $c)
-                                    <option value="{{ $c }}" {{ old('target_country', $student->target_country) == $c ? 'selected' : '' }}>{{ $c }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Target Intake</label>
-                            <input type="text" name="target_intake" value="{{ old('target_intake', $student->target_intake) }}" placeholder="e.g. April 2026, September 2026"
-                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Target University</label>
-                            <select name="target_university_id" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                                <option value="">Select University</option>
-                                @foreach($universities as $university)
-                                    <option value="{{ $university->id }}" {{ old('target_university_id', $student->target_university_id) == $university->id ? 'selected' : '' }}>{{ $university->name }}@if($university->country) ({{ $university->country }})@endif</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assign Counselor</label>
-                            <select name="counselor_id" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                                <option value="">Select Counselor</option>
-                                @foreach($counselors as $counselor)
-                                    <option value="{{ $counselor->id }}" {{ old('counselor_id', $student->counselor_id) == $counselor->id ? 'selected' : '' }}>{{ $counselor->user->name ?? 'N/A' }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                </div>
+
 
                 <!-- Login Credentials -->
                 <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">

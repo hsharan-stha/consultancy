@@ -82,14 +82,29 @@ class EmployeeController extends Controller
 
     public function show(Employee $employee)
     {
-        $employee->load(['user', 'attendances' => function($query) {
+        $employee->load(['user', 'courses', 'attendances' => function($query) {
             $query->orderBy('date', 'desc')->limit(30);
         }]);
+        
+        // Load tasks assigned to this employee's user
+        $assignedTasks = [];
+        $assignedCommunications = [];
+        if ($employee->user_id) {
+            $assignedTasks = \App\Models\Task::where('assigned_to', $employee->user_id)
+                ->with(['student', 'assignedBy'])
+                ->orderBy('due_date')
+                ->get();
+            $assignedCommunications = \App\Models\Communication::where('user_id', $employee->user_id)
+                ->with('student')
+                ->orderBy('created_at', 'desc')
+                ->limit(10)
+                ->get();
+        }
         
         $todayAttendance = $employee->attendances()->whereDate('date', today())->first();
         $thisMonthStats = $this->getMonthlyStats($employee);
 
-        return view('consultancy.employees.show', compact('employee', 'todayAttendance', 'thisMonthStats'));
+        return view('consultancy.employees.show', compact('employee', 'todayAttendance', 'thisMonthStats', 'assignedTasks', 'assignedCommunications'));
     }
 
     public function edit(Employee $employee)

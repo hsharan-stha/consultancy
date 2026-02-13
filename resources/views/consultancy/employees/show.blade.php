@@ -89,7 +89,142 @@
                             @endif
                         </div>
                     </div>
-                </div>
+
+                    <!-- Assigned Courses -->
+                    <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Assigned Courses</h3>
+                        @if($employee->courses->count())
+                            <div class="space-y-3">
+                                @foreach($employee->courses as $course)
+                                <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                                    <div class="flex justify-between items-start gap-3">
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ $course->course_code }}</p>
+                                            <p class="font-medium text-gray-900 dark:text-white">{{ $course->course_name }}</p>
+                                            @if($course->level)
+                                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Level: {{ $course->level }}</p>
+                                            @endif
+                                            <div class="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                                @if($course->pivot->hours_per_week)
+                                                    <span>Hours/Week: {{ $course->pivot->hours_per_week }}</span>
+                                                @endif
+                                                @if($course->pivot->hourly_rate)
+                                                    <span>Hourly Rate: ${{ number_format($course->pivot->hourly_rate, 2) }}</span>
+                                                @endif
+                                                @if($course->start_date)
+                                                    <span>Start: {{ $course->start_date->format('M d, Y') }}</span>
+                                                @endif
+                                                @if($course->end_date)
+                                                    <span>End: {{ $course->end_date->format('M d, Y') }}</span>
+                                                @endif
+                                            </div>
+                                            @if($course->pivot->status)
+                                            <div class="mt-2">
+                                                <span class="px-2 py-1 text-xs rounded-full 
+                                                    @if($course->pivot->status == 'active') bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
+                                                    @elseif($course->pivot->status == 'completed') bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200
+                                                    @else bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200 @endif">
+                                                    {{ ucfirst($course->pivot->status) }}
+                                                </span>
+                                            </div>
+                                            @endif
+                                        </div>
+                                        <a href="{{ route('consultancy.courses.show', $course) }}" class="text-blue-600 hover:text-blue-800 text-sm whitespace-nowrap shrink-0">View course →</a>
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <p class="text-gray-500 dark:text-gray-400 text-center py-4">No courses assigned</p>
+                        @endif
+                    </div>
+
+                    <!-- Assigned Tasks -->
+                    <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Assigned Tasks</h3>
+                        @if($assignedTasks->count())
+                            <div class="space-y-3">
+                                @foreach($assignedTasks as $task)
+                                <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-l-4
+                                    @if($task->priority == 'high') border-l-red-500
+                                    @elseif($task->priority == 'medium') border-l-yellow-500
+                                    @else border-l-blue-500 @endif">
+                                    <div class="flex justify-between items-start">
+                                        <div class="flex-1">
+                                            <p class="font-medium text-gray-900 dark:text-white">{{ $task->title }}</p>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ Str::limit($task->description, 80) }}</p>
+                                            <div class="flex flex-wrap gap-2 mt-2">
+                                                <span class="text-xs px-2 py-0.5 rounded-full 
+                                                    @if($task->status == 'completed') bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
+                                                    @elseif($task->status == 'in_progress') bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200
+                                                    @else bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200 @endif">
+                                                    {{ ucfirst(str_replace('_', ' ', $task->status)) }}
+                                                </span>
+                                                <span class="text-xs px-2 py-0.5 rounded-full 
+                                                    @if($task->priority == 'high') bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200
+                                                    @elseif($task->priority == 'medium') bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200
+                                                    @else bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 @endif">
+                                                    {{ ucfirst($task->priority) }} Priority
+                                                </span>
+                                            </div>
+                                            @if($task->due_date)
+                                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                                                Due: {{ $task->due_date->format('M d, Y') }}
+                                                @if($task->due_date->isPast() && $task->status != 'completed')
+                                                    <span class="text-red-600 dark:text-red-400 font-medium">(Overdue)</span>
+                                                @endif
+                                            </p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <p class="text-gray-500 dark:text-gray-400 text-center py-4">No tasks assigned</p>
+                        @endif
+                    </div>
+
+                    <!-- Assigned Communications -->
+                    <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Communications Log</h3>
+                        @if($assignedCommunications->count())
+                            <div class="space-y-3 max-h-96 overflow-y-auto">
+                                @foreach($assignedCommunications as $comm)
+                                <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                                    <div class="flex justify-between items-start gap-2">
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-center gap-2">
+                                                <p class="font-medium text-gray-900 dark:text-white">{{ $comm->subject ?? ucfirst($comm->type) }}</p>
+                                                <span class="text-xs px-1.5 py-0.5 rounded-full 
+                                                    @if($comm->type == 'email') bg-blue-100 text-blue-800
+                                                    @elseif($comm->type == 'phone') bg-green-100 text-green-800
+                                                    @elseif($comm->type == 'meeting') bg-purple-100 text-purple-800
+                                                    @else bg-gray-100 text-gray-800 @endif dark:bg-opacity-30">
+                                                    {{ ucfirst($comm->type) }}
+                                                </span>
+                                            </div>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ Str::limit($comm->content, 100) }}</p>
+                                            @if($comm->student)
+                                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Student: {{ $comm->student->full_name }}</p>
+                                            @endif
+                                        </div>
+                                        <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">{{ $comm->created_at->format('M d, H:i') }}</span>
+                                    </div>
+                                    @if($comm->requires_follow_up && !$comm->follow_up_completed)
+                                    <div class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
+                                        <span class="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
+                                            ⚠️ Follow-up Required
+                                        </span>
+                                    </div>
+                                    @endif
+                                </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <p class="text-gray-500 dark:text-gray-400 text-center py-4">No communications logged</p>
+                        @endif
+                    </div>
 
                 <!-- Sidebar -->
                 <div class="space-y-6">

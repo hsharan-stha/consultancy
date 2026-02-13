@@ -8,10 +8,12 @@ use App\Models\University;
 use App\Models\Counselor;
 use App\Models\Task;
 use App\Models\ConsultancyProfile;
+use App\Models\DocumentChecklist;
 use App\Mail\ApplicationCreatedMail;
 use App\Mail\ApplicationUpdatedMail;
 use App\Mail\ApplicationInterviewMail;
 use App\Mail\COEAppliedMail;
+use App\Mail\COEReceivedMail;
 use App\Mail\TaskCreatedForStudentMail;
 use App\Mail\TaskCreatedConsultancyMail;
 use Illuminate\Http\Request;
@@ -98,7 +100,25 @@ class ApplicationController extends Controller
     public function show(Application $application)
     {
         $application->load(['student', 'university', 'counselor.user', 'visaApplication', 'payments', 'tasks']);
-        return view('consultancy.applications.show', compact('application'));
+        
+        // Load student's documents, communications, and payments for display
+        $student = $application->student;
+        $student->load(['documents', 'communications.user', 'payments']);
+        
+        // Get required documents checklist based on the application's university country
+        // This ensures documents are shown per application, not per student
+        $country = $application->university->country ?? null;
+        $documentChecklist = DocumentChecklist::forCountry($country)->orderBy('order')->get();
+        $requiredDocumentsStatus = $documentChecklist->map(function ($item) use ($student) {
+            $document = $student->documents()->where('document_type', $item->document_type)->orderBy('created_at', 'desc')->first();
+            return (object) [
+                'item' => $item,
+                'submitted' => $document !== null,
+                'document' => $document,
+            ];
+        });
+        
+        return view('consultancy.applications.show', compact('application', 'requiredDocumentsStatus'));
     }
 
     public function edit(Application $application)
@@ -139,6 +159,7 @@ class ApplicationController extends Controller
         $oldStatus = $application->status;
         $oldCoeStatus = $application->coe_status;
         $oldCoeAppliedDate = $application->coe_applied_date;
+        $oldCoeReceivedDate = $application->coe_received_date;
 
         $student = $application->student;
         $validated = self::patchApplicationFromStudent($student, $validated);
@@ -206,6 +227,8 @@ class ApplicationController extends Controller
             }
             $coeStatusNow = $validated['coe_status'] ?? null;
             $coeAppliedDateNow = isset($validated['coe_applied_date']) ? $validated['coe_applied_date'] : null;
+            $coeReceivedDateNow = isset($validated['coe_received_date']) ? $validated['coe_received_date'] : null;
+            
             $coeJustApplied = ($coeStatusNow && in_array(strtolower($coeStatusNow), ['applied', 'processing'], true) && $oldCoeStatus !== $coeStatusNow)
                 || ($coeAppliedDateNow && !$oldCoeAppliedDate);
             if ($coeJustApplied) {
@@ -214,7 +237,20 @@ class ApplicationController extends Controller
                 } catch (\Exception $e) {
                 }
             }
+            
+            // Send COE Received email when coe_received_date is set or status changes to approved
+            $coeJustReceived = ($coeReceivedDateNow && !$oldCoeReceivedDate) 
+                || ($coeStatusNow === 'approved' && $oldCoeStatus !== 'approved');
+            if ($coeJustReceived) {
+                try {
+                    Mail::to($application->student->email)->send(new COEReceivedMail($application));
+                } catch (\Exception $e) {
+                }
+            }
         }
+
+        // Auto-update application status based on current data
+        $application->updateStatusAutomatically();
 
         return redirect()->route('consultancy.applications.show', $application)
             ->with('success', 'Application updated successfully!');

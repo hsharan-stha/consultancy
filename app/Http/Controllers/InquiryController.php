@@ -137,6 +137,12 @@ class InquiryController extends Controller
 
     public function convertToStudent(Inquiry $inquiry)
     {
+        // Check if inquiry is already linked to a student
+        if ($inquiry->student_id !== null) {
+            return redirect()->route('consultancy.inquiries.show', $inquiry)
+                ->with('error', 'This inquiry is already associated with a student.');
+        }
+
         // Allow conversion for any non-converted status (new, in_progress, responded, follow_up, closed)
         if ($inquiry->status === 'converted') {
             return redirect()->route('consultancy.inquiries.show', $inquiry)
@@ -146,6 +152,12 @@ class InquiryController extends Controller
         if (empty($inquiry->email) || ! filter_var($inquiry->email, FILTER_VALIDATE_EMAIL)) {
             return redirect()->route('consultancy.inquiries.show', $inquiry)
                 ->with('error', 'Cannot convert: inquiry must have a valid email address. Please add or correct the email in the inquiry contact details.');
+        }
+
+        // Check if a student with this email already exists
+        if (Student::where('email', $inquiry->email)->exists()) {
+            return redirect()->route('consultancy.inquiries.show', $inquiry)
+                ->with('error', 'A student with this email address already exists. Please use a different email or update the existing student record.');
         }
 
         $name = trim($inquiry->name ?? '');

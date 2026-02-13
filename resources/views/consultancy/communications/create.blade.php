@@ -19,7 +19,7 @@
                                 class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                                 <option value="">Select Student</option>
                                 @foreach($students as $student)
-                                    <option value="{{ $student->id }}" {{ $selectedStudent && $selectedStudent->id == $student->id ? 'selected' : '' }}>
+                                    <option value="{{ $student->id }}" data-email="{{ $student->email }}" {{ $selectedStudent && $selectedStudent->id == $student->id ? 'selected' : '' }}>
                                         {{ $student->full_name }} ({{ $student->student_id }})
                                     </option>
                                 @endforeach
@@ -132,6 +132,28 @@
                             </div>
                         </div>
 
+                        <!-- Send Email To -->
+                        <div class="space-y-3">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Send Email To</label>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="send_to_student" value="1" {{ old('send_to_student') ? 'checked' : '' }}
+                                        class="rounded border-gray-300 text-blue-600">
+                                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Send to Student</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="send_to_counselor" value="1" {{ old('send_to_counselor') ? 'checked' : '' }}
+                                        class="rounded border-gray-300 text-blue-600">
+                                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Send to Counselor</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="send_to_consultancy" value="1" {{ old('send_to_consultancy') ? 'checked' : '' }}
+                                        class="rounded border-gray-300 text-blue-600">
+                                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Send to Consultancy</span>
+                                </label>
+                            </div>
+                        </div>
+
                         <!-- Actions -->
                         <div class="flex items-center justify-end gap-4">
                             <a href="{{ route('consultancy.communications.index') }}" class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
@@ -148,6 +170,26 @@
     </div>
 
     <script>
+        // Get student email and populate email_to when student or type changes
+        function updateEmailField() {
+            const studentSelect = document.getElementById('student_id');
+            const typeSelect = document.getElementById('type');
+            const emailToField = document.getElementById('email_to');
+            const typeValue = typeSelect.value;
+            
+            if (typeValue === 'email' && studentSelect.value) {
+                const selectedOption = studentSelect.options[studentSelect.selectedIndex];
+                const studentEmail = selectedOption.getAttribute('data-email');
+                if (studentEmail && !emailToField.value) {
+                    emailToField.value = studentEmail;
+                }
+            }
+        }
+
+        document.getElementById('student_id').addEventListener('change', function() {
+            updateEmailField();
+        });
+
         document.getElementById('type').addEventListener('change', function() {
             const type = this.value;
             document.getElementById('emailFields').classList.add('hidden');
@@ -156,6 +198,7 @@
             
             if (type === 'email') {
                 document.getElementById('emailFields').classList.remove('hidden');
+                updateEmailField();
             } else if (['phone', 'whatsapp', 'sms'].includes(type)) {
                 document.getElementById('phoneFields').classList.remove('hidden');
             } else if (type === 'meeting') {
@@ -169,6 +212,11 @@
             } else {
                 document.getElementById('followUpFields').classList.add('hidden');
             }
+        });
+
+        // On page load, update email field if student was pre-selected
+        document.addEventListener('DOMContentLoaded', function() {
+            updateEmailField();
         });
     </script>
 </x-app-layout>
