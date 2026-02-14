@@ -172,6 +172,15 @@ class StudentController extends Controller
         return view('consultancy.students.show', compact('student', 'availableCoursesForEnrollment', 'hasCompletedPayment', 'requiredDocumentsStatus'));
     }
 
+    public function updateStatus(Request $request, Student $student)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:inquiry,registered,documents_pending,documents_submitted,applied,interview_scheduled,accepted,visa_processing,visa_approved,visa_rejected,departed,enrolled,completed,cancelled',
+        ]);
+        $student->update(['status' => $validated['status']]);
+        return redirect()->route('consultancy.students.show', $student)->with('success', 'Student status updated.');
+    }
+
     public function edit(Student $student)
     {
         $universities = University::orderBy('name')->get();

@@ -14,8 +14,13 @@
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             @if (session('success'))
-                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded dark:bg-green-900/30 dark:border-green-700 dark:text-green-200">
                     {{ session('success') }}
+                </div>
+            @endif
+            @if (session('error'))
+                <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded dark:bg-red-900/30 dark:border-red-700 dark:text-red-200">
+                    {{ session('error') }}
                 </div>
             @endif
 
@@ -56,6 +61,20 @@
                             <div>
                                 <p class="text-sm text-gray-500">Counselor</p>
                                 <p class="font-medium text-gray-900 dark:text-white">{{ $application->counselor->user->name ?? 'Unassigned' }}</p>
+                            </div>
+                            <div class="col-span-2 pt-2">
+                                <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Application status</p>
+                                <form method="POST" action="{{ route('consultancy.applications.update-status', $application) }}" class="flex flex-wrap items-center gap-3">
+                                    @csrf
+                                    @method('PATCH')
+                                    <span class="px-3 py-1.5 text-sm font-medium rounded-lg bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200">{{ ucfirst(str_replace('_', ' ', $application->status)) }}</span>
+                                    <select name="status" class="min-w-[320px] py-2.5 px-4 text-sm font-medium rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-500 dark:focus:border-blue-500 transition-colors">
+                                        @foreach(['draft','documents_preparing','documents_ready','submitted','under_review','interview_scheduled','interview_completed','accepted','rejected','waitlisted','withdrawn','enrolled'] as $s)
+                                            <option value="{{ $s }}" {{ $application->status === $s ? 'selected' : '' }}>{{ ucfirst(str_replace('_', ' ', $s)) }}</option>
+                                        @endforeach
+                                    </select>
+                                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg shadow-sm transition-colors">Update</button>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -104,6 +123,19 @@
                             <div>
                                 <p class="text-sm text-gray-500">Received Date</p>
                                 <p class="font-medium text-gray-900 dark:text-white">{{ $application->coe_received_date?->format('M d, Y') ?? 'Not received' }}</p>
+                            </div>
+                            <div class="col-span-2 pt-2">
+                                <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Update COE status</p>
+                                <form method="POST" action="{{ route('consultancy.applications.update-status', $application) }}" class="flex flex-wrap items-center gap-3">
+                                    @csrf
+                                    @method('PATCH')
+                                    <select name="coe_status" class="min-w-[280px] py-2.5 px-4 text-sm font-medium rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-500 dark:focus:border-blue-500 transition-colors">
+                                        @foreach(['not_applied','applied','processing','approved','rejected'] as $s)
+                                            <option value="{{ $s }}" {{ $application->coe_status === $s ? 'selected' : '' }}>{{ ucfirst(str_replace('_', ' ', $s)) }}</option>
+                                        @endforeach
+                                    </select>
+                                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg shadow-sm transition-colors">Update COE status</button>
+                                </form>
                             </div>
                         </div>
                     </div>

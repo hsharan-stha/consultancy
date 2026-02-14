@@ -75,6 +75,7 @@ Route::middleware(['auth', 'verified', 'role:1,2'])->prefix('consultancy')->name
     
     // Students Management
     Route::resource('students', StudentController::class);
+    Route::patch('students/{student}/status', [StudentController::class, 'updateStatus'])->name('students.update-status');
     Route::post('students/{student}/courses', [StudentController::class, 'enrollCourse'])->name('students.enroll-course');
     Route::post('students/{student}/courses/{course}/approve', [StudentController::class, 'approveCourseEnrollment'])->name('students.approve-course-enrollment');
     Route::post('students/{student}/courses/{course}/reject', [StudentController::class, 'rejectCourseEnrollment'])->name('students.reject-course-enrollment');
@@ -91,6 +92,7 @@ Route::middleware(['auth', 'verified', 'role:1,2'])->prefix('consultancy')->name
     
     // Applications Management
     Route::resource('applications', ApplicationController::class);
+    Route::patch('applications/{application}/status', [ApplicationController::class, 'updateStatus'])->name('applications.update-status');
     
     // Visa Applications Management
     Route::resource('visa', VisaApplicationController::class);

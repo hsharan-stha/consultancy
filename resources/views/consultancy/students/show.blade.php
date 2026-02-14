@@ -287,6 +287,17 @@
                             @else bg-blue-100 text-blue-800 @endif">
                             {{ ucfirst(str_replace('_', ' ', $student->status)) }}
                         </span>
+                        <form method="POST" action="{{ route('consultancy.students.update-status', $student) }}" class="mt-4 text-left">
+                            @csrf
+                            @method('PATCH')
+                            <label for="student_status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Update status</label>
+                            <select name="status" id="student_status" class="w-full min-w-0 py-2.5 px-3 text-sm font-medium rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-500 dark:focus:border-blue-500 transition-colors">
+                                @foreach(['inquiry','registered','documents_pending','documents_submitted','applied','interview_scheduled','accepted','visa_processing','visa_approved','visa_rejected','departed','enrolled','completed','cancelled'] as $s)
+                                    <option value="{{ $s }}" {{ $student->status === $s ? 'selected' : '' }}>{{ ucfirst(str_replace('_', ' ', $s)) }}</option>
+                                @endforeach
+                            </select>
+                            <button type="submit" class="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg shadow-sm transition-colors">Update status</button>
+                        </form>
                     </div>
 
                     <!-- Documents -->

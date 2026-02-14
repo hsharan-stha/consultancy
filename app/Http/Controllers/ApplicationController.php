@@ -299,6 +299,23 @@ class ApplicationController extends Controller
             ->with('success', 'Application updated successfully!');
     }
 
+    public function updateStatus(Request $request, Application $application)
+    {
+        $validated = $request->validate([
+            'status' => 'nullable|in:draft,documents_preparing,documents_ready,submitted,under_review,interview_scheduled,interview_completed,accepted,rejected,waitlisted,withdrawn,enrolled',
+            'coe_status' => 'nullable|in:not_applied,applied,processing,approved,rejected',
+        ]);
+        if (empty($validated['status']) && empty($validated['coe_status'])) {
+            return redirect()->route('consultancy.applications.show', $application)->with('error', 'Please select a status to update.');
+        }
+        $updates = array_filter([
+            'status' => $validated['status'] ?? null,
+            'coe_status' => $validated['coe_status'] ?? null,
+        ]);
+        $application->update($updates);
+        return redirect()->route('consultancy.applications.show', $application)->with('success', 'Status updated.');
+    }
+
     public function destroy(Application $application)
     {
         $studentId = $application->student_id;
